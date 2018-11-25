@@ -10,7 +10,7 @@ public class FastZombieBehaviour : MonoBehaviour {
     //Coroutine ended
     private bool coroutinePatrolEnded;
 
-    private AIStateType currentState = AIStateType.Patrol;
+    private AIStates currentState = AIStates.Patrol;
 
     //Suffle de los waypoints así cada zombie tiene un path distinto
     private WayPoint_Manager wp = null;
@@ -59,7 +59,7 @@ public class FastZombieBehaviour : MonoBehaviour {
         co = null; wa = null; blood = null;
 
         currentWayPoint = -1;
-        currentState = AIStateType.Patrol;
+        currentState = AIStates.Patrol;
 
         animator = GetComponent<Animator>();
         initAnimator();
@@ -169,47 +169,47 @@ public class FastZombieBehaviour : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        if (!currentState.Equals(AIStateType.Feeding) && !feeding && coroutinePatrolEnded)
+        if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
         {
             hungry -= hungry_time;
             if (hungry < 0)
             {
                 hungry = 0;
             }
-            if (hungry < 0.1f && !currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+            if (hungry < 0.1f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
-                currentState = AIStateType.Feeding;
+                currentState = AIStates.Feeding;
             }
         }
         else if (feeding && coroutinePatrolEnded)
         {
             hungry += hungry_time * 50;
             Debug.Log("Hungry Level = " + hungry);
-            if (hungry >= 90f && !currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+            if (hungry >= 90f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
                 Debug.Log("ENTRO IF FEEDING UPDATE");
                 setAnimatorParameters("Feeding_bool", false);
                 hungry = 100;
-                currentState = AIStateType.Patrol;
+                currentState = AIStates.Patrol;
                 seeking_food = false;
                 feeding = false;
 
                 StartCoroutine(wait());
             }
         }
-        else if(currentState.Equals(AIStateType.Alerted))
+        else if(currentState.Equals(AIStates.Alerted))
         {
             float d = Vector3.Distance(target.transform.position, transform.position);
             if (d < 3)
             {
-                currentState = AIStateType.Attack;
+                currentState = AIStates.Attack;
                 lookingFor = false;
             }
             else
             {
                 if (d > GetComponent<SphereCollider>().radius)
                 {
-                    currentState = AIStateType.Patrol;
+                    currentState = AIStates.Patrol;
                     lookingFor = false;
                 }
                 else
@@ -218,18 +218,18 @@ public class FastZombieBehaviour : MonoBehaviour {
                 }
             }
         }
-        else if (currentState.Equals(AIStateType.Attack))
+        else if (currentState.Equals(AIStates.Attack))
         {
             float d = Vector3.Distance(target.transform.position, transform.position);
             if (d < 5)
             {
-                //currentState = AIStateType.Attack;
+                //currentState = AIStates.Attack;
                 //lookingFor = false;
             }
             else
             {
 
-                currentState = AIStateType.Alerted;
+                currentState = AIStates.Alerted;
                 atacking = false;
             }
         }
@@ -256,7 +256,7 @@ public class FastZombieBehaviour : MonoBehaviour {
                         {
                             target = hit.transform.gameObject;
                             distance = d;
-                            currentState = AIStateType.Alerted;
+                            currentState = AIStates.Alerted;
                             
                         }
                     }
@@ -282,7 +282,7 @@ public class FastZombieBehaviour : MonoBehaviour {
     {
         switch (currentState)
         {
-            case AIStateType.Patrol:
+            case AIStates.Patrol:
                 if (agent.remainingDistance < 0.3f && !nextPathCalculated)
                 {
                     nextPathCalculated = true;
@@ -291,19 +291,19 @@ public class FastZombieBehaviour : MonoBehaviour {
                     co = StartCoroutine(loadAnimationSeek());
                 }
                 break;
-            case AIStateType.Feeding:
+            case AIStates.Feeding:
                 if (!seeking_food)
                 {
                     setFoodPoint();
                 }
                 break;
-            case AIStateType.Alerted:
+            case AIStates.Alerted:
                 if (!lookingFor)
                 {
                     setAlertedPoint();
                 }
                 break;
-            case AIStateType.Attack:
+            case AIStates.Attack:
                 if (!atacking)
                 {
                     setAtackPoint();
@@ -315,7 +315,7 @@ public class FastZombieBehaviour : MonoBehaviour {
     #region feeding_state_methods
     public void startToEat()
     {
-        if (!feeding && AIStateType.Feeding == currentState)
+        if (!feeding && AIStates.Feeding == currentState)
         {
             feeding = true;
 
