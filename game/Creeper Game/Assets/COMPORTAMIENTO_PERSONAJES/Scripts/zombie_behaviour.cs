@@ -6,7 +6,7 @@ using UnityEngine.AI;
 namespace comportamiento_personajes
 {
     // Public Enums of the AI System
-    public enum AIStateType { Patrol, Alerted, Attack, Feeding, Dead }
+    public enum AIStates { Patrol, Alerted, Attack, Feeding, Dead, RunAway, Give, Rest, Steal, Heal }
     public enum AITargetType { None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
 
 
@@ -17,7 +17,7 @@ namespace comportamiento_personajes
         //Coroutine ended
         private bool coroutinePatrolEnded;
 
-        private AIStateType currentState = AIStateType.Patrol;
+        private AIStates currentState = AIStates.Patrol;
 
         //Suffle de los waypoints así cada zombie tiene un path distinto
         private WayPoint_Manager wp = null;
@@ -59,7 +59,7 @@ namespace comportamiento_personajes
             co = null; wa = null; blood = null;
 
             currentWayPoint = -1;
-            currentState = AIStateType.Patrol;
+            currentState = AIStates.Patrol;
 
             animator = GetComponent<Animator>();
             initAnimator();
@@ -149,28 +149,28 @@ namespace comportamiento_personajes
         // Update is called once per frame
         void Update()
         {
-            if (!currentState.Equals(AIStateType.Feeding) && !feeding && coroutinePatrolEnded)
+            if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
             {
                 hungry -= hungry_time;
                 if(hungry < 0)
                 {
                     hungry = 0;
                 }
-                if(hungry < 0.1f && !currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+                if(hungry < 0.1f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
                 {
-                    currentState = AIStateType.Feeding;
+                    currentState = AIStates.Feeding;
                 }
             }
             else if(feeding && coroutinePatrolEnded)
             {
                 hungry += hungry_time*50;
                 Debug.Log("Hungry Level = " + hungry);
-                if (hungry >= 90f && !currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+                if (hungry >= 90f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
                 {
                     Debug.Log("ENTRO IF FEEDING UPDATE");
                     setAnimatorParameters("Feeding_bool", false);
                     hungry = 100;
-                    currentState = AIStateType.Patrol;
+                    currentState = AIStates.Patrol;
                     seeking_food = false;
                     feeding = false;
 
@@ -185,7 +185,7 @@ namespace comportamiento_personajes
         {
             switch (currentState)
             {
-                case AIStateType.Patrol:
+                case AIStates.Patrol:
                         if (agent.remainingDistance < 0.3f && !nextPathCalculated)
                         {
                             nextPathCalculated = true;
@@ -194,7 +194,7 @@ namespace comportamiento_personajes
                             co = StartCoroutine(loadAnimationSeek());
                         }
                     break;
-                case AIStateType.Feeding:
+                case AIStates.Feeding:
                     if (!seeking_food)
                     { 
                         setFoodPoint();                       
@@ -206,7 +206,7 @@ namespace comportamiento_personajes
         #region feeding_state_methods
         public void startToEat()
         {
-            if (!feeding && AIStateType.Feeding==currentState)
+            if (!feeding && AIStates.Feeding==currentState)
             {
                 feeding = true;
 
