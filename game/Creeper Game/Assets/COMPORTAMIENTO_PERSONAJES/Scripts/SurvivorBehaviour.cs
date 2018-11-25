@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
-using comportamiento_personajes;
 
 public class SurvivorBehaviour : MonoBehaviour {
 

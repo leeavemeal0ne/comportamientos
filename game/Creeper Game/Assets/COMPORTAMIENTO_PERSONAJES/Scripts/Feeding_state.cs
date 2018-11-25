@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
@@ -21,7 +22,7 @@ namespace comportamiento_personajes
 
         public void StartState()
         {
-            currentState = AIStateType_state.Feeding;
+            currentState = AIStates.Feeding;
             seeking_food = true;
             setFoodPoint();
         }
@@ -45,7 +46,7 @@ namespace comportamiento_personajes
         #region feeding_state_methods
         public void startToEat()
         {
-            if (!feeding && AIStateType_state.Feeding == currentState)
+            if (!feeding && AIStates.Feeding == currentState)
             {
                 feeding = true;
 
@@ -64,7 +65,7 @@ namespace comportamiento_personajes
         // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
         public void Update() {
 
-            if (!currentState.Equals(AIStateType_state.Feeding)) return;
+            if (!currentState.Equals(AIStates.Feeding)) return;
 
             if (feeding)
             {

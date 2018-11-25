@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
     // Public Enums of the AI System
-    public enum AIStateType_state { Patrol, Alerted, Attack, Feeding, Dead }
-    public enum AITargetType_state { None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
+   
 
     public class AIStateMachine_zombie : MonoBehaviour
     {
@@ -15,7 +15,7 @@ namespace comportamiento_personajes
         protected Coroutines_Script coroutine_script;
 
         [HideInInspector]
-        protected AIStateType_state currentState = AIStateType_state.Patrol;
+        protected AIStates currentState = AIStates.Patrol;
 
         //Suffle de los waypoints así cada zombie tiene un path distinto
         protected WayPoint_Manager wp = null;
@@ -59,7 +59,7 @@ namespace comportamiento_personajes
             min_hungry = 0.1f;
 
             currentWayPoint = -1;
-            currentState = AIStateType_state.Patrol;
+            currentState = AIStates.Patrol;
 
             //animator = gameObject.GetComponent<Animator>();
             idletime = animations[0].length;

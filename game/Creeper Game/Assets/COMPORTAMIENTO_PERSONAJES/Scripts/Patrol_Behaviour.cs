@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
@@ -20,23 +21,23 @@ namespace comportamiento_personajes
 
         public void StartState()
         {
-            currentState = AIStateType_state.Patrol;
+            currentState = AIStates.Patrol;
             co = null; wa = null; blood = null;            
         }
 
         // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
         public void Update() {
 
-            if (!currentState.Equals(AIStateType_state.Patrol)) return;
+            if (!currentState.Equals(AIStates.Patrol)) return;
 
-            if (!currentState.Equals(AIStateType_state.Feeding) && coroutinePatrolEnded)
+            if (!currentState.Equals(AIStates.Feeding) && coroutinePatrolEnded)
                 {
                 hungry -= hungry_time;
                 if (hungry < 0)
                 {
                     hungry = 0;
                 }
-                if (hungry < 0.1f && !currentState.Equals(AIStateType_state.Alerted) && !currentState.Equals(AIStateType_state.Attack))
+                if (hungry < 0.1f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
                 {                   
                     gameObject.GetComponent<Feeding_state>().StartState();
                     //setAnimatorTriggerParameters("Feeding_state");
@@ -52,7 +53,7 @@ namespace comportamiento_personajes
         {
             switch (currentState)
             {
-                case AIStateType_state.Patrol:
+                case AIStates.Patrol:
                     if (agent.remainingDistance < 0.3f && !nextPathCalculated)
                     {
                         nextPathCalculated = true;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using comportamiento_personajes;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 public class FastZombieBehaviour : MonoBehaviour {
     public Coroutine co = null, wa = null, blood = null;
