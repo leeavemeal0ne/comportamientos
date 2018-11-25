@@ -241,7 +241,7 @@ public class FastZombieBehaviour : MonoBehaviour {
     void OnTriggerStay(Collider collision)
     {
         //Check for a match with the specified name on any GameObject that collides with your GameObject
-        if (collision.gameObject.tag == "NormalZombie")
+        if (collision.gameObject.tag == "Zombie")
         {
             Vector3 direction = collision.gameObject.transform.position - transform.position;
             float angle = Vector3.Angle(direction, transform.forward);
@@ -250,7 +250,7 @@ public class FastZombieBehaviour : MonoBehaviour {
                 RaycastHit hit;
                 if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
                 {
-                    if (hit.transform.tag == "NormalZombie")
+                    if (hit.transform.tag == "Zombie")
                     {
                         float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
                         if (d < distance)
