@@ -16,7 +16,7 @@ namespace comportamiento_personajes
 
         private void Start()
         {
-            if(_minstance == null)
+            if (_minstance == null)
             {
                 _minstance = this;
             }
@@ -24,7 +24,7 @@ namespace comportamiento_personajes
 
         //getters
         public static WayPoint_Manager getInstance()
-        {
+        {           
             return _minstance;
         }
 
