@@ -47,6 +47,8 @@ public class FastZombieBehaviour : MonoBehaviour {
     private GameObject target;
     private float distance = 100;
     private bool alerted = false;
+    private bool lookingFor = false;
+    private bool atacking = false;
 
     // Use this for initialization
     void Start()
@@ -150,13 +152,18 @@ public class FastZombieBehaviour : MonoBehaviour {
         agent.SetDestination(target.transform.position);
         setAnimatorParameters("Speed", 1);
         setAgentParameters(2, 120);
+        lookingFor = true;
     }
     private void setAtackPoint()
     {
-        ResetAllPatrolTasks();
-        agent.SetDestination(target.transform.position);
+        StopAllPatrolTasks();
+        //agent.SetDestination(target.transform.position);
         setAnimatorParameters("Atack", true);
-        setAgentParameters(2, 120);
+        
+        //setAnimatorParameters("Speed", 0);
+        //setAnimatorTriggerParameters("Attack_trigger");
+        //setAgentParameters(2, 120);
+        atacking = true;
     }
 
     // Update is called once per frame
@@ -196,33 +203,34 @@ public class FastZombieBehaviour : MonoBehaviour {
             if (d < 3)
             {
                 currentState = AIStateType.Attack;
-                setAtackPoint();
+                lookingFor = false;
             }
             else
             {
                 if (d > GetComponent<SphereCollider>().radius)
                 {
                     currentState = AIStateType.Patrol;
+                    lookingFor = false;
                 }
                 else
                 {
-                    setAlertedPoint();
+                    agent.SetDestination(target.transform.position);
                 }
             }
         }
         else if (currentState.Equals(AIStateType.Attack))
         {
             float d = Vector3.Distance(target.transform.position, transform.position);
-            if (d < 3)
+            if (d < 5)
             {
                 //currentState = AIStateType.Attack;
-                //setAtackPoint();
+                //lookingFor = false;
             }
             else
             {
-                
-                    setAlertedPoint();
-                
+
+                currentState = AIStateType.Alerted;
+                atacking = false;
             }
         }
 
@@ -287,6 +295,18 @@ public class FastZombieBehaviour : MonoBehaviour {
                 if (!seeking_food)
                 {
                     setFoodPoint();
+                }
+                break;
+            case AIStateType.Alerted:
+                if (!lookingFor)
+                {
+                    setAlertedPoint();
+                }
+                break;
+            case AIStateType.Attack:
+                if (!atacking)
+                {
+                    setAtackPoint();
                 }
                 break;
         }
