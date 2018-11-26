@@ -5,11 +5,7 @@ using UnityEngine.AI;
 
 namespace comportamiento_personajes
 {
-    // Public Enums of the AI System
-    public enum AIStateType { Patrol, Alerted, Attack, Feeding, Dead }
-    public enum AITargetType { None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
-
-
+ 
     public class zombie_behaviour : MonoBehaviour
     {
         public Coroutine co = null, wa = null, blood = null;
