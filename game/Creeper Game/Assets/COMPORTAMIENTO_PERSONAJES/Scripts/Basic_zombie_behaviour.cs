@@ -6,9 +6,9 @@ using UnityEngine.AI;
 namespace comportamiento_personajes
 {
     // Public Enums of the AI System
-    public enum AIStateType { Patrol, Alerted, Attack, Feeding, Dead }
+    public enum AIStateType { Patrol, Alerted, Attack, Feeding, Pain, Dead }
     public enum AITargetType { None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
-
+    
 
     public class Basic_zombie_behaviour : MonoBehaviour
     {
@@ -112,15 +112,47 @@ namespace comportamiento_personajes
         public void TakeDamage(int damage)
         {
             life -= damage;
-            if(life < 0)
+            Debug.Log("life = " + life);
+            if(life <= 0)
             {
-                life = 0;
                 //activar animacion de muerte
+                setAnimatorTriggerParameters("Dead_trigger");
+                ZombieIsDead();               
             }
             else
             {
+                /*if (co != null)
+                {
+                    StopCoroutine(co);
+                }
+                if(wa != null)
+                {
+                    StopCoroutine(wa);
+                }*/
                 //activar animación de daño
+                //StopAllCoroutines();
+                setAnimatorTriggerParameters("Pain_trigger");
             }
+        }
+
+        private void ZombieIsDead()
+        {
+            Debug.Log("DEBERÍA ESTAR MUERTO");
+            life = 0;           
+            //initAnimator();
+            if (co != null)
+            {
+                StopCoroutine(co);
+            }
+            if (wa != null)
+            {
+                StopCoroutine(wa);
+            }
+            //activar animación de daño
+            StopAllCoroutines();
+            setAgentParameters(0, 0);
+            agent.ResetPath();
+            this.enabled = false;
         }
         #endregion
 
