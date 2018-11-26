@@ -30,7 +30,9 @@ public class SurvivorBehaviour : MonoBehaviour {
     /* VARIABLES PARA PERSEGUIR */
     GameObject actualTarget;
     float distance = 100;
-    float ammo = 0;
+    float ammo = 10;
+    private bool canAttack = false;
+    private bool canDoAction = false;
 
     // Use this for initialization
     void Start () {
@@ -47,6 +49,7 @@ public class SurvivorBehaviour : MonoBehaviour {
 
         print("Creado superviviente con " + waypoints.Count + " puntos de control");
         setState(AIStates.Patrol);
+        //setState(AIStates.Rest);
     }
 	
 	// Update is called once per frame
@@ -65,13 +68,18 @@ public class SurvivorBehaviour : MonoBehaviour {
                 Patrol();
                 break;
             case AIStates.Attack:
-                if (Chase())
-                {
+                if (canAttack)
+                {                    
                     print("He llegado");
-                    actualTarget = null;
+                    //actualTarget = null;
                     distance = 100;
+                    agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
                     anim.SetTrigger("LookAround");
-                    setState(AIStates.Patrol);
+                    //setState(AIStates.Patrol);
+                }
+                else
+                {
+                    Chase();
                 }
                 break;
             case AIStates.RunAway:
@@ -89,21 +97,35 @@ public class SurvivorBehaviour : MonoBehaviour {
 
                 break;
             case AIStates.Steal:
-                if (Chase())
+                if (!canDoAction)
                 {
-
+                    Chase();
+                }
+                else
+                {
+                    print("Robando");
                 }
                 break;
             case AIStates.Heal:
-                if (Chase())
+                if (!canDoAction)
                 {
+                    Chase();
+                }
+                else
+                {
+                    agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                    {
+                        anim.SetBool("Touch", true);
+                    }
 
+                    print("Curando");
                 }
                 break;
             case AIStates.Give:
-                if (Chase())
+                if (!canDoAction)
                 {
-
+                    Chase();
                 }
                 break;
             case AIStates.Rest:
@@ -125,7 +147,10 @@ public class SurvivorBehaviour : MonoBehaviour {
                 break;
             case AIStates.RunAway:
                 agent.speed = StandardConstants.SURVIVOR_RUNNING_SPEED;
-                //anim.SetTrigger("Walk");
+                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                {
+                    anim.SetTrigger("Walk");
+                }
                 StopAllCoroutines();
                 break;
             case AIStates.Rest:
@@ -201,19 +226,6 @@ public class SurvivorBehaviour : MonoBehaviour {
         //Gizmos.DrawSphere(hit.position, 0.5f);
     }
 
-    private void OnDrawGizmos()
-    {
-        if (debug)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(agent.destination, 0.5f);
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(dirdir, 0.5f);
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(hitpoint, 0.5f);
-        }
-        
-    }
 
     private void DetectZombi()
     {
@@ -298,6 +310,41 @@ public class SurvivorBehaviour : MonoBehaviour {
 
         }
     }
+
+    private void OnDrawGizmos()
+    {
+        if (debug)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(agent.destination, 0.5f);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(dirdir, 0.5f);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(hitpoint, 0.5f);
+        }
+
+    }
+
+    public void setCanAttack(bool value)
+    {
+        canAttack = value;
+    }
+
+    public void setCanDoAction(bool value)
+    {
+        canDoAction = value;
+    }
+
+    public GameObject getTarget()
+    {
+        return actualTarget;
+    }
+
+    public AIStates getState()
+    {
+        return currentState;
+    }
+
 
     IEnumerator waitIdle()
     {

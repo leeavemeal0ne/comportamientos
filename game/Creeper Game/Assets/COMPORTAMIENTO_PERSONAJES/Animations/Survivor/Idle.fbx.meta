@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 3a5eda1cb89086547a0efe4b238a55d9
+guid: a629c3eab68cbfc4e8ad4a3d55786eb4
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
@@ -139,7 +139,7 @@ ModelImporter:
     400130: mixamorig:Spine
     400132: mixamorig:Spine1
     400134: mixamorig:Spine2
-    7400000: LookAround
+    7400000: Idle
     9500000: //RootNode
   externalObjects: {}
   materials:
@@ -170,10 +170,10 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: LookAround
+      name: Idle
       takeName: mixamo.com
       firstFrame: 0
-      lastFrame: 510
+      lastFrame: 936
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
