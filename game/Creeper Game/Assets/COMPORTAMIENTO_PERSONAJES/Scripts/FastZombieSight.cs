@@ -12,7 +12,7 @@ namespace comportamiento_personajes
         private float distance = 100;
         private bool alerted = false;
         private bool lookingFor = false;
-        private bool attacking = false;
+        public bool attacking = false;
 
         FastZombieBehaviour parent;
 
@@ -70,11 +70,7 @@ namespace comportamiento_personajes
                 float d = Vector3.Distance(target.transform.position, transform.position);
                 if (d < 2)
                 {
-                    if(target.tag == "Dead")
-                    {
-                        parent.currentState = AIStates.Patrol;
-                        attacking = false;
-                    }
+                    
                 }
                 else
                 {

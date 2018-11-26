@@ -363,4 +363,14 @@ public class FastZombieBehaviour : Zombie {
         GetComponentInChildren<FastZombieSight>().target.GetComponent<Zombie>().TakeDamage(25);
         Debug.Log("yeeeeee");
     }
+
+    public void IsDead()
+    {
+        FastZombieSight son = GetComponentInChildren<FastZombieSight>();
+        if (son.target.tag == "Dead")
+        {
+            currentState = AIStates.Patrol;
+            son.attacking = false;
+        }
+    }
 }
