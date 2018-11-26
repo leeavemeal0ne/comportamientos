@@ -70,8 +70,11 @@ namespace comportamiento_personajes
                 float d = Vector3.Distance(target.transform.position, transform.position);
                 if (d < 2)
                 {
-                    //currentState = AIStates.Attack;
-                    //lookingFor = false;
+                    if(target.tag == "Dead")
+                    {
+                        parent.currentState = AIStates.Patrol;
+                        attacking = false;
+                    }
                 }
                 else
                 {
