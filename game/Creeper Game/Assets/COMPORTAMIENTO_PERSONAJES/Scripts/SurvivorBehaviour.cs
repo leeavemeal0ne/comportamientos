@@ -6,6 +6,12 @@ using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 public class SurvivorBehaviour : MonoBehaviour {
 
+    /*DEBUG*/
+    public bool debug = false;
+    Vector3 dirdir;
+    Vector3 hitpoint;
+    float lastDirection;
+
     public float goodness = 100;
     private NavMeshAgent agent;
     private Animator anim;
@@ -19,13 +25,12 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     /*VARIABLES PARA CAMBIAR DE ESTADO*/
     private bool idleStarted = false;
-    bool checkIdleBool = true;
     private AIStates currentState = AIStates.Patrol;
 
     /* VARIABLES PARA PERSEGUIR */
     GameObject actualTarget;
     float distance = 100;
-    float ammo = 10;
+    float ammo = 0;
 
     // Use this for initialization
     void Start () {
@@ -41,9 +46,7 @@ public class SurvivorBehaviour : MonoBehaviour {
         }
 
         print("Creado superviviente con " + waypoints.Count + " puntos de control");
-
-        agent.SetDestination(waypoints[0].position);
-        StartCoroutine("checkIdle");
+        setState(AIStates.Patrol);
     }
 	
 	// Update is called once per frame
@@ -54,6 +57,8 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     private void CheckStateBehaviour()
     {
+        print("State: " + currentState);
+        //print("Target: " + actualTarget.name);
         switch (currentState)
         {
             case AIStates.Patrol:
@@ -66,10 +71,22 @@ public class SurvivorBehaviour : MonoBehaviour {
                     actualTarget = null;
                     distance = 100;
                     anim.SetTrigger("LookAround");
-                    currentState = AIStates.Patrol;
+                    setState(AIStates.Patrol);
                 }
                 break;
             case AIStates.RunAway:
+                float distanceToTarget = Vector3.Distance(transform.position, actualTarget.transform.position);
+                distance = distanceToTarget;
+                if(distanceToTarget < StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR)
+                {
+                    RunAway();
+                }
+                else
+                {
+                    print("He terminado de huir");
+                    setState(AIStates.Rest);
+                }
+
                 break;
             case AIStates.Steal:
                 if (Chase())
@@ -89,15 +106,44 @@ public class SurvivorBehaviour : MonoBehaviour {
 
                 }
                 break;
+            case AIStates.Rest:
+                break;
 
         }
+    }
+
+    private void setState(AIStates state)
+    {
+        switch (state)
+        {
+            case AIStates.Patrol:
+                agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
+                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                    anim.SetTrigger("Walk");
+                idleStarted = false;
+                StartCoroutine("checkIdle");
+                break;
+            case AIStates.RunAway:
+                agent.speed = StandardConstants.SURVIVOR_RUNNING_SPEED;
+                //anim.SetTrigger("Walk");
+                StopAllCoroutines();
+                break;
+            case AIStates.Rest:
+                if(!anim.GetCurrentAnimatorStateInfo(0).IsName("LookAround"))
+                    anim.SetTrigger("LookAround");
+                break;
+            default:
+                StopAllCoroutines();
+                break;
+        }
+        currentState = state;
     }
 
     private void Patrol()
     {
         if(agent.destination != waypoints[actualWayPoint].position)
         {
-            agent.destination = waypoints[actualWayPoint].position;
+            agent.SetDestination(waypoints[actualWayPoint].position);
         }
 
         if (CheckPoint())
@@ -123,7 +169,6 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     private bool Chase()
     {
-        checkIdleBool = false;
         bool isClose = false;
         if (agent.destination != actualTarget.transform.position)
         {
@@ -136,15 +181,49 @@ public class SurvivorBehaviour : MonoBehaviour {
         return isClose;
     }
 
+    
+    private void RunAway()
+    {
+        float distanceUnits = Vector3.Distance(transform.position, actualTarget.transform.position);
+        if (Mathf.Abs(lastDirection-distanceUnits)>3.0f || agent.remainingDistance<0.3)
+        {
+            lastDirection = distanceUnits;
+            Vector3 targetDist = transform.position - actualTarget.transform.position;
+            float randAngle = Random.Range(0f, 45f);
+            targetDist = Quaternion.AngleAxis(randAngle, Vector3.up) * targetDist;
+            Vector3 newDir = transform.position  +(targetDist.normalized * 2);
+            NavMeshHit hit;
+            NavMesh.SamplePosition(newDir, out hit, 5.0f, NavMesh.AllAreas);
+            dirdir = newDir;
+            hitpoint = hit.position;
+            agent.SetDestination(hit.position);
+        }
+        //Gizmos.DrawSphere(hit.position, 0.5f);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (debug)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(agent.destination, 0.5f);
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(dirdir, 0.5f);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(hitpoint, 0.5f);
+        }
+        
+    }
+
     private void DetectZombi()
     {
         if (ammo > 0)
         {
-            currentState = AIStates.Attack;
+            setState(AIStates.Attack);
         }
         else
         {
-            currentState = AIStates.RunAway;
+            setState(AIStates.RunAway);
         }
     }
 
@@ -155,22 +234,22 @@ public class SurvivorBehaviour : MonoBehaviour {
             if (true)
             {
                 //Comprobamos si el jugador tiene menos del 100% de vida
-                currentState = AIStates.Heal;
+                setState(AIStates.Heal);
             }
             else
             {
-                currentState = AIStates.Give;
+                setState(AIStates.Give);
             }
         }
         else
         {
             if (goodness < 30)
             {
-                currentState = AIStates.Attack;
+                setState(AIStates.Attack);
             }
             else
             {
-                currentState = AIStates.Steal;
+                setState(AIStates.Steal);
             }
         }
     }
@@ -193,6 +272,7 @@ public class SurvivorBehaviour : MonoBehaviour {
                         if (d < distance)
                         {
                             actualTarget = hit.transform.gameObject;
+                            StopAllCoroutines();
                             if (zombieTags.Contains(hit.transform.tag))
                             {
                                 //Hemos detectado un zombie
@@ -219,18 +299,20 @@ public class SurvivorBehaviour : MonoBehaviour {
         }
     }
 
-        IEnumerator waitIdle()
+    IEnumerator waitIdle()
     {
         print("Starting idle");
+        agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
         anim.SetTrigger("LookAround");
         yield return new WaitForSeconds(8.45f);
+        anim.SetTrigger("Walk");
         print("Ending idle");
         idleStarted = false;
-        agent.speed = 1;
+        agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
     }   
     IEnumerator checkIdle()
     {
-        while (checkIdleBool)
+        while (true)
         {
             print("Voy a esperar");
             yield return new WaitForSeconds(5.0f);
@@ -241,7 +323,6 @@ public class SurvivorBehaviour : MonoBehaviour {
             {
                 print("Going to idle");
                 idleStarted = true;
-                agent.speed = 0;
                 StartCoroutine("waitIdle");
             }
             yield return new WaitForFixedUpdate();
