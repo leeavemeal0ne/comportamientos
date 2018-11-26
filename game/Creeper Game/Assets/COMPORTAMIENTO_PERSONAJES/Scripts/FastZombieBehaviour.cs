@@ -46,6 +46,9 @@ public class FastZombieBehaviour : Zombie {
 
     
 
+    //life
+    private int life = 100;
+
     // Use this for initialization
     void Start()
     {
@@ -83,6 +86,58 @@ public class FastZombieBehaviour : Zombie {
     {
         agent.speed = speed;
         agent.angularSpeed = angular_speed;
+    }
+    #endregion
+
+    #region TakeDamage_state
+    /// <summary>
+    /// Cuando golpean al zombie le resta vida
+    /// </summary>
+    /// <param name="damage"></param>
+    public override void TakeDamage(int damage)
+    {
+        life -= damage;
+        Debug.Log("life = " + life);
+        if (life <= 0)
+        {
+            //activar animacion de muerte
+            setAnimatorTriggerParameters("Dead_trigger");
+            ZombieIsDead();
+        }
+        else
+        {
+            /*if (co != null)
+            {
+                StopCoroutine(co);
+            }
+            if(wa != null)
+            {
+                StopCoroutine(wa);
+            }*/
+            //activar animación de daño
+            //StopAllCoroutines();
+            setAnimatorTriggerParameters("Pain_trigger");
+        }
+    }
+
+    private void ZombieIsDead()
+    {
+        Debug.Log("DEBERÍA ESTAR MUERTO");
+        life = 0;
+        //initAnimator();
+        if (co != null)
+        {
+            StopCoroutine(co);
+        }
+        if (wa != null)
+        {
+            StopCoroutine(wa);
+        }
+        //activar animación de daño
+        StopAllCoroutines();
+        setAgentParameters(0, 0);
+        agent.ResetPath();
+        this.enabled = false;
     }
     #endregion
 
