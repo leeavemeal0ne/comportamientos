@@ -11,7 +11,7 @@ public class FastZombieBehaviour : Zombie {
     //Coroutine ended
     private bool coroutinePatrolEnded;
 
-    private AIStates currentState = AIStates.Patrol;
+    public AIStates currentState = AIStates.Patrol;
 
     //Suffle de los waypoints así cada zombie tiene un path distinto
     private WayPoint_Manager wp = null;
@@ -44,12 +44,7 @@ public class FastZombieBehaviour : Zombie {
     private bool feeding = false;
     private bool seeking_food = false;
 
-    //zombie vision
-    private GameObject target;
-    private float distance = 100;
-    private bool alerted = false;
-    private bool lookingFor = false;
-    private bool atacking = false;
+    
 
     // Use this for initialization
     void Start()
@@ -84,7 +79,7 @@ public class FastZombieBehaviour : Zombie {
     #endregion
 
     #region setAgentParameters
-    private void setAgentParameters(float speed = 0, float angular_speed = 0)
+    public void setAgentParameters(float speed = 0, float angular_speed = 0)
     {
         agent.speed = speed;
         agent.angularSpeed = angular_speed;
@@ -92,11 +87,11 @@ public class FastZombieBehaviour : Zombie {
     #endregion
 
     #region setAnimatorParameters
-    private void setAnimatorParameters(string name, float value)
+    public void setAnimatorParameters(string name, float value)
     {
         animator.SetFloat(name, value);
     }
-    private void setAnimatorParameters(string name, bool value)
+    public void setAnimatorParameters(string name, bool value)
     {
         animator.SetBool(name, value);
     }
@@ -104,7 +99,7 @@ public class FastZombieBehaviour : Zombie {
     {
         animator.SetInteger(name, value);
     }*/
-    private void setAnimatorTriggerParameters(string name)
+    public void setAnimatorTriggerParameters(string name)
     {
         animator.Rebind();
 
@@ -147,25 +142,8 @@ public class FastZombieBehaviour : Zombie {
     }
     #endregion
 
-    private void setAlertedPoint()
-    {
-        ResetAllPatrolTasks();
-        agent.SetDestination(target.transform.position);
-        setAnimatorParameters("Speed", 1);
-        setAgentParameters(2, 120);
-        lookingFor = true;
-    }
-    private void setAtackPoint()
-    {
-        StopAllPatrolTasks();
-        //agent.SetDestination(target.transform.position);
-        setAnimatorParameters("Atack", true);
-        
-        //setAnimatorParameters("Speed", 0);
-        //setAnimatorTriggerParameters("Attack_trigger");
-        //setAgentParameters(2, 120);
-        atacking = true;
-    }
+    
+
 
     // Update is called once per frame
     void Update()
@@ -199,86 +177,12 @@ public class FastZombieBehaviour : Zombie {
                 StartCoroutine(wait());
             }
         }
-        else if(currentState.Equals(AIStates.Alerted))
-        {
-            float d = Vector3.Distance(target.transform.position, transform.position);
-            if (d < 3)
-            {
-                currentState = AIStates.Attack;
-                lookingFor = false;
-            }
-            else
-            {
-                if (d > GetComponent<SphereCollider>().radius)
-                {
-                    currentState = AIStates.Patrol;
-                    lookingFor = false;
-                }
-                else
-                {
-                    agent.SetDestination(target.transform.position);
-                }
-            }
-        }
-        else if (currentState.Equals(AIStates.Attack))
-        {
-            float d = Vector3.Distance(target.transform.position, transform.position);
-            if (d < 5)
-            {
-                //currentState = AIStates.Attack;
-                //lookingFor = false;
-            }
-            else
-            {
-
-                currentState = AIStates.Alerted;
-                atacking = false;
-            }
-        }
+        
 
         checkStateBehaviour();
     }
 
-    void OnTriggerStay(Collider collision)
-    {
-        //Check for a match with the specified name on any GameObject that collides with your GameObject
-        if (collision.gameObject.tag == "Zombie")
-        {
-            Vector3 direction = collision.gameObject.transform.position - transform.position;
-            float angle = Vector3.Angle(direction, transform.forward);
-            if (angle < 30.0f)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
-                {
-                    if (hit.transform.tag == "Zombie")
-                    {
-                        float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
-                        if (d < distance)
-                        {
-                            target = hit.transform.gameObject;
-                            distance = d;
-                            currentState = AIStates.Alerted;
-                            
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-                    Debug.Log("Did not Hit");
-                }
-            }
-                
-        }
 
-        //Check for a match with the specific tag on any GameObject that collides with your GameObject
-        if (collision.gameObject.tag == "MyGameObjectTag")
-        {
-            //If the GameObject has the same tag as specified, output this message in the console
-            Debug.Log("Do something else here");
-        }
-    }
 
     private void checkStateBehaviour()
     {
@@ -300,16 +204,10 @@ public class FastZombieBehaviour : Zombie {
                 }
                 break;
             case AIStates.Alerted:
-                if (!lookingFor)
-                {
-                    setAlertedPoint();
-                }
+
                 break;
             case AIStates.Attack:
-                if (!atacking)
-                {
-                    setAtackPoint();
-                }
+
                 break;
         }
     }
@@ -366,7 +264,7 @@ public class FastZombieBehaviour : Zombie {
         StopAllPatrolTasks();
     }
 
-    private void StopAllPatrolTasks()
+    public void StopAllPatrolTasks()
     {
         if (co != null)
         {
@@ -388,7 +286,7 @@ public class FastZombieBehaviour : Zombie {
         initAnimator();
     }
 
-    private void ResetAllPatrolTasks()
+    public void ResetAllPatrolTasks()
     {
 
         Debug.Log("Cierro las aplicaciones");
@@ -404,4 +302,10 @@ public class FastZombieBehaviour : Zombie {
         initAnimator();
     }
     #endregion
+
+    public void DmgEvent()
+    {
+        GetComponentInChildren<FastZombieSight>().target.GetComponent<Zombie>().TakeDamage(25);
+        Debug.Log("yeeeeee");
+    }
 }
