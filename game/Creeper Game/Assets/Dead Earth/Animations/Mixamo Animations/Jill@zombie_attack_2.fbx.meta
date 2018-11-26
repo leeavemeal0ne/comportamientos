@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: cf9a789c1ff926b4397b1fe38bf3cd98
+guid: de6ef105bee577145ac602de8c60d1b5
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
@@ -656,7 +656,7 @@ ModelImporter:
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 0
       loopBlendPositionY: 0
@@ -668,23 +668,7 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events:
-      - time: 0.4047619
-        functionName: DmgEvent
-        data: 
-        objectReferenceParameter: {fileID: 1993128076407848, guid: 15544d92a26ffab4086fa8b54c08f94c,
-          type: 2}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
-      - time: 1
-        functionName: IsDead
-        data: 
-        objectReferenceParameter: {fileID: 1993128076407848, guid: 15544d92a26ffab4086fa8b54c08f94c,
-          type: 2}
-        floatParameter: 0
-        intParameter: 0
-        messageOptions: 0
+      events: []
       transformMask:
       - path: 
         weight: 1

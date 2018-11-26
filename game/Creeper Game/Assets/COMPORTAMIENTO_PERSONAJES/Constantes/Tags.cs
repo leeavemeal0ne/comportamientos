@@ -11,5 +11,6 @@ namespace Assets.COMPORTAMIENTO_PERSONAJES.Constantes
         public const string FAST_ZOMBIE = "FastZombie";
         public const string PLAYER= "Player";
         public const string SURVIVOR = "Survivor";
+        public const string DEATH_ZOMBIE = "dead";
     }
 }

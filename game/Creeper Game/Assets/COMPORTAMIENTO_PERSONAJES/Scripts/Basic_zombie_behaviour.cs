@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
@@ -10,7 +11,7 @@ namespace comportamiento_personajes
     public enum AITargetType { None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
     
 
-    public class Basic_zombie_behaviour : MonoBehaviour
+    public class Basic_zombie_behaviour : Zombie
     {
         //Agent variables
         private const float AGENT_SPEED = 0.05f;
@@ -28,7 +29,7 @@ namespace comportamiento_personajes
         private bool coroutinePatrolEnded;
 
         [HideInInspector]
-        public AIStateType currentState = AIStateType.Patrol;
+        public AIStates currentState = AIStates.Patrol;
 
         //Suffle de los waypoints así cada zombie tiene un path distinto
         private WayPoint_Manager wp = null;
@@ -76,7 +77,7 @@ namespace comportamiento_personajes
             co = null; wa = null; blood = null;
 
             currentWayPoint = -1;
-            currentState = AIStateType.Patrol;
+            currentState = AIStates.Patrol;
 
             animator = GetComponentInParent<Animator>();
             initAnimator();
@@ -98,7 +99,7 @@ namespace comportamiento_personajes
         {
             return wp;
         } 
-        public void setCurrentState(AIStateType state)
+        public void setCurrentState(AIStates state)
         {
             currentState = state;
         }
@@ -109,7 +110,7 @@ namespace comportamiento_personajes
         /// Cuando golpean al zombie le resta vida
         /// </summary>
         /// <param name="damage"></param>
-        public void TakeDamage(int damage)
+        public override void TakeDamage(int damage)
         {
             life -= damage;
             Debug.Log("life = " + life);
@@ -152,6 +153,7 @@ namespace comportamiento_personajes
             StopAllCoroutines();
             setAgentParameters(0, 0);
             agent.ResetPath();
+            gameObject.tag = "Dead";
             this.enabled = false;
         }
         #endregion
@@ -242,10 +244,10 @@ namespace comportamiento_personajes
         public void FixedUpdate()
         {
             //Si no está en alerta o attaque accede aquí así restamos si tiene hambre
-            if(!currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+            if(!currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
                 //coroutinePatrolEnded indica si las coroutines han terminado así no mezclamos animaciones ni estados durante las animaciones
-                if (!currentState.Equals(AIStateType.Feeding) && !feeding && coroutinePatrolEnded)
+                if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
                 {
                     hungry -= hungry_time;
                     if (hungry < 0)
@@ -254,19 +256,19 @@ namespace comportamiento_personajes
                     }
                     if (hungry < min_hungry )
                     {
-                        currentState = AIStateType.Feeding;
+                        currentState = AIStates.Feeding;
                     }
                 }
                 //si está comiendo restauramos el hambre a 100 y volvemos al estado Patrol
                 else if (feeding && coroutinePatrolEnded)
                 {
                     hungry += hungry_time * 50;
-                    if (hungry >= 90f && !currentState.Equals(AIStateType.Alerted) && !currentState.Equals(AIStateType.Attack))
+                    if (hungry >= 90f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
                     {
                         Debug.Log("ENTRO IF FEEDING UPDATE");
                         setAnimatorParameters("Feeding_bool", false);
                         hungry = 100;
-                        currentState = AIStateType.Patrol;
+                        currentState = AIStates.Patrol;
                         seeking_food = false;
                         feeding = false;
 
@@ -284,7 +286,7 @@ namespace comportamiento_personajes
         {
             switch (currentState)
             {
-                case AIStateType.Patrol:
+                case AIStates.Patrol:
                         if (agent.remainingDistance < 0.3f && !nextPathCalculated)
                         {
                             nextPathCalculated = true;
@@ -293,20 +295,20 @@ namespace comportamiento_personajes
                             co = StartCoroutine(loadAnimationSeek());
                         }
                     break;
-                case AIStateType.Feeding:
+                case AIStates.Feeding:
                     if (!seeking_food)
                     { 
                         setFoodPoint();                       
                     }
                     break;
-                case AIStateType.Alerted:
+                case AIStates.Alerted:
                     //nada
                     break;
-                case AIStateType.Attack:
+                case AIStates.Attack:
                     //nada
                     break;
                 default:
-                    currentState = AIStateType.Patrol;
+                    currentState = AIStates.Patrol;
                     setNextRandomPoint();
                     break;
             }
@@ -317,9 +319,9 @@ namespace comportamiento_personajes
         /// Cuando hemos llegado al zombie_food para alimentarnos y entramos en su collider nos activa esta función
         /// Que nos hace entrar en el estado feed y activa las animaciones de comer
         /// </summary>
-        public void startToEat()
+        public override void startToEat()
         {
-            if (!feeding && AIStateType.Feeding==currentState)
+            if (!feeding && AIStates.Feeding==currentState)
             {
                 feeding = true;
 
@@ -369,7 +371,7 @@ namespace comportamiento_personajes
         {
             Debug.Log("BACK TO PATROL -------");
             setAnimatorParameters("Speed", 0);
-            setCurrentState(AIStateType.Patrol);
+            setCurrentState(AIStates.Patrol);
             setNextRandomPoint();
         }
         /// <summary>
@@ -378,7 +380,7 @@ namespace comportamiento_personajes
         public void backToAlert()
         {
             setisAttacking(false);
-            setCurrentState(AIStateType.Alerted);
+            setCurrentState(AIStates.Alerted);
             //lo dejamos en idle mientras calculamos el siguiente punto así no anda a lo loco mientras calcula
             setAnimatorParameters("Speed", 0);
             setNextRandomPoint();
