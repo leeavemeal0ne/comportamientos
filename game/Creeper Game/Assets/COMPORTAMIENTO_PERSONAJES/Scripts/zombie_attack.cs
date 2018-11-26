@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
@@ -34,7 +35,7 @@ namespace comportamiento_personajes
             if (other.tag.Equals(TAG))
             {
                 zb.setisAttacking(true);
-                zb.setCurrentState(AIStateType.Attack);
+                zb.setCurrentState(AIStates.Attack);
 
                 if (available)
                 {

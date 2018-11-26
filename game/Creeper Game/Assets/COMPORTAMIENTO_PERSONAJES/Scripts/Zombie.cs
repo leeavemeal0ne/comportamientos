@@ -9,5 +9,6 @@ namespace comportamiento_personajes
     {
 
         public abstract void startToEat();
+        public abstract void TakeDamage(int dmg);
     }
 }

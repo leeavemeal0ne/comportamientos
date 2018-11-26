@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
@@ -53,7 +54,7 @@ namespace comportamiento_personajes
             }
             else
             {
-                if (zb.currentState == AIStateType.Feeding)
+                if (zb.currentState == AIStates.Feeding)
                 {
                     zb.ResetAllFeedingTasks();
                 }
@@ -63,7 +64,7 @@ namespace comportamiento_personajes
                 if (playerInSight)
                 {
                     Debug.Log("SIGHT ON TRIGGER ENTER LE VEO Y CAMBIO A ALERTED");
-                    zb.setCurrentState(AIStateType.Alerted);
+                    zb.setCurrentState(AIStates.Alerted);
                 }
                 else
                 {
@@ -84,15 +85,15 @@ namespace comportamiento_personajes
             {
                 calculateSight(other);
                 //Si veo al jugador y estamos en modo patrulla cambio el estado a alerta
-                if (playerInSight && zb.currentState == AIStateType.Patrol)
+                if (playerInSight && zb.currentState == AIStates.Patrol)
                 {
                     //Debug.Log("LE VEO ASIK VOY A POR EL -------------------------------------------------------");
-                    zb.setCurrentState(AIStateType.Alerted);
+                    zb.setCurrentState(AIStates.Alerted);
                 }
                     
                 else if (!playerInSight)
                 {
-                    if(zb.currentState == AIStateType.Alerted)
+                    if(zb.currentState == AIStates.Alerted)
                         zb.backToPatrol();
                 }
                    
@@ -106,7 +107,7 @@ namespace comportamiento_personajes
 
             if (players.Contains(other.gameObject))
             {
-                if (zb.currentState == AIStateType.Alerted)
+                if (zb.currentState == AIStates.Alerted)
                     StartCoroutine(wait());
                 else
                 {
