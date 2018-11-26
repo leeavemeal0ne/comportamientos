@@ -137,6 +137,7 @@ public class FastZombieBehaviour : Zombie {
         StopAllCoroutines();
         setAgentParameters(0, 0);
         agent.ResetPath();
+        gameObject.tag = "Dead";
         this.enabled = false;
     }
     #endregion
