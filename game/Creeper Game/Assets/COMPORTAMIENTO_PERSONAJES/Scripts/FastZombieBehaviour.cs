@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using comportamiento_personajes;
 using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
-public class FastZombieBehaviour : MonoBehaviour {
+public class FastZombieBehaviour : Zombie {
     public Coroutine co = null, wa = null, blood = null;
 
     //Coroutine ended
@@ -179,6 +179,7 @@ public class FastZombieBehaviour : MonoBehaviour {
             }
             if (hungry < 0.1f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
+                Debug.Log("CAMBIO ESTADO A FEEDING");
                 currentState = AIStates.Feeding;
             }
         }
@@ -314,8 +315,9 @@ public class FastZombieBehaviour : MonoBehaviour {
     }
 
     #region feeding_state_methods
-    public void startToEat()
+    public override void startToEat()
     {
+        Debug.Log("LLEGO A START TO EAT PERO NO HAGO NADA");
         if (!feeding && AIStates.Feeding == currentState)
         {
             feeding = true;

@@ -13,7 +13,7 @@ namespace comportamiento_personajes
             string name = LayerMask.LayerToName(other.gameObject.layer);
             if (name.Equals("Zombie"))
             {
-                other.GetComponent<Basic_zombie_behaviour>().startToEat();
+                other.GetComponent<Zombie>().startToEat();
                //other.GetComponent<Feeding_state>().startToEat();
             }
         }
