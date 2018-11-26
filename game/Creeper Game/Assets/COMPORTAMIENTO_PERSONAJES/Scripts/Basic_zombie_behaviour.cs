@@ -64,6 +64,7 @@ namespace comportamiento_personajes
 
         //zombie life
         public int life = 100;
+        private bool isDead = false;
         
 
         // Use this for initialization
@@ -114,9 +115,10 @@ namespace comportamiento_personajes
         {
             life -= damage;
             Debug.Log("life = " + life);
-            if(life <= 0)
+            if(life <= 0 && !isDead)
             {
                 //activar animacion de muerte
+                isDead = true;
                 setAnimatorTriggerParameters("Dead_trigger");
                 ZombieIsDead();               
             }

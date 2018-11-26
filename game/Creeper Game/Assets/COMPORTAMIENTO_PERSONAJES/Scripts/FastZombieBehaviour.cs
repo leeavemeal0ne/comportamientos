@@ -137,6 +137,7 @@ public class FastZombieBehaviour : Zombie {
         StopAllCoroutines();
         setAgentParameters(0, 0);
         agent.ResetPath();
+        gameObject.tag = "Dead";
         this.enabled = false;
     }
     #endregion
@@ -369,6 +370,7 @@ public class FastZombieBehaviour : Zombie {
         FastZombieSight son = GetComponentInChildren<FastZombieSight>();
         if (son.target.tag == "Dead")
         {
+            son.distance = 100;
             currentState = AIStates.Patrol;
             son.attacking = false;
         }
