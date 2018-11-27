@@ -57,6 +57,9 @@ using comportamiento_personajes;
 
     //throw object
     public GameObject throwableObject; 
+    private float gravity = 9.8f;
+    private float projectileAngle = 30.0f;
+    private Vector3 playerPosition;
 
 
     // Use this for initialization
@@ -308,16 +311,36 @@ using comportamiento_personajes;
             
             agent.SetDestination(collision.transform.position);
             //cuando llegue al objeto
-
             throwableObject = collision.gameObject;
             throwableObject.transform.position = rightHand.transform.position;
             throwableObject.transform.parent = rightHand.transform;
             setAnimatorParameters("Speed", 0);
             setAgentParameters(0);
-            setAnimatorTriggerParameters("ThrowObject");
-
+            setAnimatorTriggerParameters("ThrowObject"); //solo me hace esta animación, las otras se quedan en t-pose
+            //cuando termine la animación (que no se como se hace) 
+            throwableObject.transform.parent = null;
+            Rigidbody r = throwableObject.gameObject.GetComponent<Rigidbody>();
+            r.useGravity = true;
+            playerPosition = new Vector3(0, 0, 20); //es broma no se cual es la de verdad
+            r.AddForce(calcBallisticVelocityVector(throwableObject.transform.position, playerPosition, projectileAngle));
+            //después de esto se debería mover pero tampoco sé como se hace
         }
 
+    }
+
+    Vector3 calcBallisticVelocityVector(Vector3 source, Vector3 target, float angle)
+    {
+        Vector3 direction = target - source;
+        float h = direction.y;
+        direction.y = 0;
+        float distance = direction.magnitude;
+        float a = angle * Mathf.Deg2Rad;
+        direction.y = distance * Mathf.Tan(a);
+        distance += h / Mathf.Tan(a);
+
+        // calculate velocity
+        float velocity = Mathf.Sqrt(distance * Physics.gravity.magnitude / Mathf.Sin(2 * a));
+        return velocity * direction.normalized;
     }
     #endregion
 
