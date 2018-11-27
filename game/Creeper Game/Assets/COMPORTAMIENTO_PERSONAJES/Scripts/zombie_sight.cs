@@ -14,10 +14,12 @@ namespace comportamiento_personajes
         //public NavMeshAgent agent;
         protected Basic_zombie_behaviour zb;
         public float fieldOfViewAngle = 110f;
-        private bool playerInSight;
+        protected bool playerInSight;
         private Vector3 personalLastSighting;
         private Vector3 previousSighting;
         private List<GameObject> players;
+
+
 
         private float waitSeconds;
 
@@ -156,11 +158,11 @@ namespace comportamiento_personajes
                             //agent.SetDestination(previousSighting);
                         }                        
                     }                   
-                    direction = Quaternion.Euler(0, -40, 0) * direction;
+                    /*direction = Quaternion.Euler(0, -40, 0) * direction;
                     Debug.DrawRay(transform.position, direction, Color.blue);
                     direction = Quaternion.Euler(0, 80, 0) * direction;
                     Debug.DrawRay(transform.position, direction, Color.blue);
-                    Debug.DrawLine(transform.position, hit.point,Color.red);
+                    Debug.DrawLine(transform.position, hit.point,Color.red);*/
                 }
             }
         }

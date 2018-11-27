@@ -63,14 +63,16 @@ namespace comportamiento_personajes
         private bool seeking_food = false;
 
         //zombie life
-        public int life = 100;
-        private bool isDead = false;
+        public int life;
+        private bool isDead;
         
 
         // Use this for initialization
         public void Start()
         {
             //StopAllCoroutines();
+
+            life = 100;
 
             isAttacking = false;
 
@@ -104,6 +106,10 @@ namespace comportamiento_personajes
         {
             currentState = state;
         }
+        public override bool getIsDead()
+        {
+            return isDead;
+        }
         #endregion
 
         #region TakeDamage_state
@@ -113,12 +119,13 @@ namespace comportamiento_personajes
         /// <param name="damage"></param>
         public override void TakeDamage(int damage)
         {
+            if (isDead) return;
+
             life -= damage;
-            Debug.Log("life = " + life);
             if(life <= 0 && !isDead)
             {
-                //activar animacion de muerte
                 isDead = true;
+                gameObject.tag = "Dead";
                 setAnimatorTriggerParameters("Dead_trigger");
                 ZombieIsDead();               
             }
@@ -154,8 +161,7 @@ namespace comportamiento_personajes
             //activar animación de daño
             StopAllCoroutines();
             setAgentParameters(0, 0);
-            agent.ResetPath();
-            gameObject.tag = "Dead";
+            agent.ResetPath();            
             this.enabled = false;
         }
         #endregion
