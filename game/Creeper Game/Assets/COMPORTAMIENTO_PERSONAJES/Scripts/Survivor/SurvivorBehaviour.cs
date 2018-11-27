@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
-public class SurvivorBehaviour : MonoBehaviour {
+public class SurvivorBehaviour : Human {
 
     /*DEBUG*/
     public bool debug = false;
@@ -14,7 +14,6 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     public float goodness = 100;
     private NavMeshAgent agent;
-    private Animator anim;
     /* VARIABLES PARA EL NAVMESH*/
     public GameObject WayPointList;
     private List<Transform> waypoints;
@@ -23,24 +22,30 @@ public class SurvivorBehaviour : MonoBehaviour {
     private List<string> zombieTags;
     private List<string> survivorTags;
 
+    //En esta lista se meterán los humanos que se detecten para no volver a detectarlos en un tiempo después de realizar la acción
+    private List<GameObject> detectedHumans;
+
     /*VARIABLES PARA CAMBIAR DE ESTADO*/
     private bool idleStarted = false;
     private AIStates currentState = AIStates.Patrol;
 
     /* VARIABLES PARA PERSEGUIR */
     GameObject actualTarget;
-    float distance = 100;
-    float ammo = 10;
+    float distance = StandardConstants.SURVIVOR_DETECT_DIST;
     private bool canAttack = false;
     private bool canDoAction = false;
+    private bool canDetect = true;
+    private bool healing = false;
+    private bool givingAmmo = false;
 
     // Use this for initialization
     void Start () {
+        base.Start();
         agent = GetComponent<NavMeshAgent>();
-        anim = GetComponent<Animator>();
         waypoints = new List<Transform>();
         zombieTags = new List<string>(new string[] { Tags.NORMAL_ZOMBIE, Tags.FAST_ZOMBIE });
         survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER });
+        detectedHumans = new List<GameObject>();
 
         foreach(Transform t in WayPointList.transform)
         {
@@ -72,7 +77,7 @@ public class SurvivorBehaviour : MonoBehaviour {
                 {                    
                     print("He llegado");
                     //actualTarget = null;
-                    distance = 100;
+                    distance = StandardConstants.SURVIVOR_DETECT_DIST;
                     agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
                     anim.SetTrigger("LookAround");
                     //setState(AIStates.Patrol);
@@ -114,18 +119,39 @@ public class SurvivorBehaviour : MonoBehaviour {
                 else
                 {
                     agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
-                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle") && !healing)
                     {
                         anim.SetBool("Touch", true);
+                        healing = true;
+                        StartCoroutine("Heal");
                     }
 
                     print("Curando");
                 }
                 break;
             case AIStates.Give:
-                if (!canDoAction)
+                if (ammo > 0)
                 {
-                    Chase();
+                    if (!canDoAction)
+                    {
+                        Chase();
+                    }
+
+                    else
+                    {
+                        if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle") && !givingAmmo)
+                        {
+                            agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
+                            anim.SetBool("Touch", true);
+                            givingAmmo = true;
+                            StartCoroutine("GiveAmmo");
+                        }
+                    }
+                }
+                else
+                {
+                    print(this.name + ": No tengo munición");
+                    setState(AIStates.Patrol);
                 }
                 break;
             case AIStates.Rest:
@@ -141,8 +167,12 @@ public class SurvivorBehaviour : MonoBehaviour {
             case AIStates.Patrol:
                 agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                 if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                {
+                    print("Anim state: " + anim.GetCurrentAnimatorStateInfo(1).IsName("Walking"));
                     anim.SetTrigger("Walk");
+                }
                 idleStarted = false;
+                canDoAction = false;
                 StartCoroutine("checkIdle");
                 break;
             case AIStates.RunAway:
@@ -154,8 +184,18 @@ public class SurvivorBehaviour : MonoBehaviour {
                 StopAllCoroutines();
                 break;
             case AIStates.Rest:
+                canDoAction = false;
                 if(!anim.GetCurrentAnimatorStateInfo(0).IsName("LookAround"))
                     anim.SetTrigger("LookAround");
+                break;
+            case AIStates.Give:
+                StopAllCoroutines();
+                agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
+                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                {
+                    print("setting walk");
+                    anim.SetTrigger("Walk");
+                }
                 break;
             default:
                 StopAllCoroutines();
@@ -243,7 +283,7 @@ public class SurvivorBehaviour : MonoBehaviour {
     {
         if (goodness > 50)
         {
-            if (true)
+            if (human.GetComponent<Human>().isWounded())
             {
                 //Comprobamos si el jugador tiene menos del 100% de vida
                 setState(AIStates.Heal);
@@ -257,7 +297,7 @@ public class SurvivorBehaviour : MonoBehaviour {
         {
             if (goodness < 30)
             {
-                setState(AIStates.Attack);
+                //setState(AIStates.Attack);
             }
             else
             {
@@ -268,46 +308,55 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     void OnTriggerStay(Collider collision)
     {
-        if (zombieTags.Contains(collision.gameObject.tag) || survivorTags.Contains(collision.gameObject.tag))
+        print("CanDetect: " + canDetect);
+        if (canDetect && !detectedHumans.Contains(collision.gameObject))
         {
-            Vector3 direction = collision.gameObject.transform.position - transform.position;
-            float angle = Vector3.Angle(direction, transform.forward);
-            if (angle < 30.0f)
+            if (zombieTags.Contains(collision.gameObject.tag) || survivorTags.Contains(collision.gameObject.tag))
             {
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
+                Vector3 direction = collision.gameObject.transform.position - transform.position;
+                float angle = Vector3.Angle(direction, transform.forward);
+                if (angle < 30.0f)
                 {
-                    Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-                    if (zombieTags.Contains(hit.transform.tag) || survivorTags.Contains(hit.transform.tag))
+                    RaycastHit hit;
+                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
                     {
-                        float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
-                        if (d < distance)
+                        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
+                        if (zombieTags.Contains(hit.transform.tag) || survivorTags.Contains(hit.transform.tag))
                         {
-                            actualTarget = hit.transform.gameObject;
-                            StopAllCoroutines();
-                            if (zombieTags.Contains(hit.transform.tag))
+                            print("Distace: " + distance);
+                            float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
+                            if (d < distance)
                             {
-                                //Hemos detectado un zombie
-                                DetectZombi();
+                                actualTarget = hit.transform.gameObject;
+                                StopAllCoroutines();
+                                if (zombieTags.Contains(hit.transform.tag))
+                                {
+                                    //Hemos detectado un zombie
+                                    DetectZombi();
+
+                                }
+                                else
+                                {
+                                    //Hemos detectado un humano
+                                    DetectHuman(hit.transform.gameObject);
+                                }
+                                print("Detectado " + collision.gameObject.tag);
 
                             }
                             else
                             {
-                                //Hemos detectado un humano
-                                DetectHuman(hit.transform.gameObject);
+                                print("Distance: " + distance);
                             }
-                            print("Detectado " + collision.gameObject.tag);
-
                         }
                     }
+                    else
+                    {
+                        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
+                        Debug.Log("Did not Hit");
+                    }
                 }
-                else
-                {
-                    Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-                    Debug.Log("Did not Hit");
-                }
-            }
 
+            }
         }
     }
 
@@ -348,24 +397,19 @@ public class SurvivorBehaviour : MonoBehaviour {
 
     IEnumerator waitIdle()
     {
-        print("Starting idle");
         agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
         anim.SetTrigger("LookAround");
         yield return new WaitForSeconds(8.45f);
         anim.SetTrigger("Walk");
-        print("Ending idle");
         idleStarted = false;
         agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
-    }   
+    }
     IEnumerator checkIdle()
     {
         while (true)
         {
-            print("Voy a esperar");
             yield return new WaitForSeconds(5.0f);
-            print("He esperado");
             float random = Random.Range(0.0f, 1.0f);
-            print(random);
             if (!idleStarted && random > 0.8f)
             {
                 print("Going to idle");
@@ -374,5 +418,45 @@ public class SurvivorBehaviour : MonoBehaviour {
             }
             yield return new WaitForFixedUpdate();
         }
+    }
+
+    IEnumerator Heal()
+    {
+        canDetect = false;
+        detectedHumans.Add(actualTarget);
+        IEnumerator specificReset = resetDetection(30.0f, actualTarget);
+        StartCoroutine(specificReset);
+        yield return new WaitForSeconds(2.0f);
+        //CURAR
+        distance = StandardConstants.SURVIVOR_DETECT_DIST;
+        anim.SetBool("Touch", false);
+        yield return new WaitForSeconds(0.5f);
+        setState(AIStates.Patrol);
+        canDetect = true;
+        healing = false;
+    }
+
+    IEnumerator GiveAmmo()
+    {
+        canDetect = false;
+        detectedHumans.Add(actualTarget);
+        IEnumerator specificReset = resetDetection(30.0f, actualTarget);
+        StartCoroutine(specificReset);
+        yield return new WaitForSeconds(2.0f);
+        actualTarget.GetComponent<Human>().GiveAmmo(this, StandardConstants.SURVIVOR_AMMO_TO_GIVE);
+        distance = StandardConstants.SURVIVOR_DETECT_DIST;
+        anim.SetBool("Touch", false);
+        yield return new WaitForSeconds(0.7f);
+        setState(AIStates.Patrol);
+        canDetect = true;
+        givingAmmo = false;
+        
+    }
+
+    IEnumerator resetDetection(float time, GameObject target)
+    {
+        yield return new WaitForSeconds(time);
+        print("Removed: " + target.name);
+        detectedHumans.Remove(target);
     }
 }

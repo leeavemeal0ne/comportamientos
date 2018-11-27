@@ -19,7 +19,6 @@ public class SurvivorActions : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
-        print(other.gameObject.name);
         if (other.gameObject == survivor.getTarget())
         {
             print("He alcanzado a mi objetivo");
