@@ -14,9 +14,11 @@ namespace comportamiento_personajes
         private bool available;
         //path por el que va a moverse el zombie
         public AnimationClip animation_attack;
+        private SphereCollider spCol;
 
         private void Awake()
         {
+            spCol = GetComponentInParent<SphereCollider>();
             //Si está disponible para ejecutar la animación
             available = true;
             //transform del padre
@@ -26,20 +28,20 @@ namespace comportamiento_personajes
 
         private void OnTriggerEnter(Collider other)
         {
-            if (zb.feeding)
+            if (zb.feeding || !playerInSight)
             {
                 return;
             }
 
             //Debug.Log("Entro en attack Collider, is Attacking = " + zb_attack.getisAttacking());
-            if (other.tag.Equals(TAG))
+            if (other.tag.Equals(TAG) && !playerInSight)
             {
                 zb.setisAttacking(true);
                 zb.setCurrentState(AIStates.Attack);
 
                 if (available)
                 {
-                    zb.setAgentParameters(0, 0);
+                    zb.setAgentParameters(0);
                     zb.resetPersecutionPoint();
                     zb.setAnimatorTriggerParameters("Attack_trigger");
                     StartCoroutine(animationFinish());
@@ -50,7 +52,7 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
-            if (zb.feeding)
+            if (zb.feeding || !playerInSight)
             {
                 return;
             }
@@ -62,16 +64,17 @@ namespace comportamiento_personajes
                     Debug.Log("VELOCIDAD A 0");
                     zb.setAnimatorParameters("Speed", 0);
                     
-                }
+                }                
                 zb.setAnimatorTriggerParameters("Attack_trigger");
-                StartCoroutine(animationFinish());               
+                StartCoroutine(animationFinish());                         
             }
-            if (other.tag.Equals(TAG))
+
+            /*if (other.tag.Equals(TAG))
             {
                 //OJO NOSE SI FUNCIONA MUY BIEN ESTO -----------REVISAR----------------
                 //Rotamos para golpear hacia el superviviente aunque nose si esto lo hace muy bien
                 parent_transform.Rotate(other.transform.eulerAngles);
-            }
+            }*/
             
             //parent_transform.LookAt(other.transform.position, Vector3.up);
         }
@@ -79,7 +82,7 @@ namespace comportamiento_personajes
         //Si salimos del collider attack volvemos al estado alerta
         private void OnTriggerExit(Collider other)
         {
-            if (zb.feeding) return;
+            if (zb.feeding || !playerInSight) return;
 
             if (other.tag.Equals(TAG))
             {

@@ -44,6 +44,7 @@ public class FastZombieBehaviour : Zombie {
     private bool feeding = false;
     private bool seeking_food = false;
 
+    private bool isDead;
     
 
     //life
@@ -53,6 +54,8 @@ public class FastZombieBehaviour : Zombie {
     void Start()
     {
         StopAllCoroutines();
+
+        isDead = false;
 
         coroutinePatrolEnded = true;
         co = null; wa = null; blood = null;
@@ -68,6 +71,11 @@ public class FastZombieBehaviour : Zombie {
         wayPoints = wp.getWayPointsPath();
 
         setNextRandomPoint();
+    }
+
+    public override bool getIsDead()
+    {
+        return isDead;
     }
 
     #region init animator
@@ -345,7 +353,6 @@ public class FastZombieBehaviour : Zombie {
     public void ResetAllPatrolTasks()
     {
 
-        Debug.Log("Cierro las aplicaciones");
         if (co != null)
         {
             StopCoroutine(co);
@@ -362,13 +369,13 @@ public class FastZombieBehaviour : Zombie {
     public void DmgEvent()
     {
         GetComponentInChildren<FastZombieSight>().target.GetComponent<Zombie>().TakeDamage(25);
-        Debug.Log("yeeeeee");
+        //Debug.Log("yeeeeee");
     }
 
     public void IsDead()
     {
         FastZombieSight son = GetComponentInChildren<FastZombieSight>();
-        if (son.target.tag == "Dead")
+        if (son.target.GetComponent<Zombie>().getIsDead())
         {
             son.distance = 100;
             currentState = AIStates.Patrol;
