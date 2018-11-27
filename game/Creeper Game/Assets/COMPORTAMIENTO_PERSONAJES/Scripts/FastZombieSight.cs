@@ -22,7 +22,7 @@ namespace comportamiento_personajes
         {
             parent.ResetAllPatrolTasks();
             parent.agent.SetDestination(target.transform.position);
-            parent.setAnimatorParameters("Speed", 1);
+            parent.setAnimatorParameters("Speed", 3);
             parent.setAgentParameters(2, 120);
             lookingFor = true;
         }

@@ -47,7 +47,7 @@ public class FastZombieBehaviour : Zombie {
     
 
     //life
-    private int life = 100;
+    private int life = 10000;
 
     // Use this for initialization
     void Start()
@@ -116,7 +116,7 @@ public class FastZombieBehaviour : Zombie {
             }*/
             //activar animación de daño
             //StopAllCoroutines();
-            setAnimatorTriggerParameters("Pain_trigger");
+            setAnimatorTriggerParameters("Pain_Trigger");
         }
     }
 
