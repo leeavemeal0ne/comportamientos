@@ -40,6 +40,7 @@ public class SurvivorBehaviour : Human {
     private bool healing = false;
     private bool givingAmmo = false;
     private bool isAiming = false;
+    private bool finishedAiming = false;
 
     // Use this for initialization
     void Start () {
@@ -75,41 +76,34 @@ public class SurvivorBehaviour : Human {
             case AIStates.Patrol:
                 Patrol();
                 break;
-            case AIStates.Attack:
+            case AIStates.Attack:                
                 print("Attacking at a distance: " + distance);
-                RaycastHit hit;
-                
-                Debug.DrawRay(rightHand.position, transform.forward*100, Color.red, -1);
-                if (Physics.Raycast(rightHand.position, transform.forward, out hit, StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR))
+                if (CheckRayTarget())
                 {
-                    if (hit.transform.gameObject == actualTarget)
+                    agent.speed = 0;
+                    anim.SetBool("AimWalking", false);
+                    Vector3 realObjectPos = new Vector3(actualTarget.transform.position.x, transform.position.y, actualTarget.transform.position.z);
+                    Vector3 relPos = realObjectPos - transform.position;
+                    Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
+                    transform.rotation = rot;
+                    if (!isAiming)
                     {
-                        agent.speed = 0;
-                        anim.SetBool("AimWalking", false);
-                        Vector3 realObjectPos = new Vector3(actualTarget.transform.position.x, transform.position.y, actualTarget.transform.position.z);
-                        Vector3 relPos = realObjectPos - transform.position;
-                        Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
-                        transform.rotation = rot;
-                        if (!isAiming)
-                        {
-                            anim.SetBool("Aim", true);
-                        }
+                        anim.SetBool("Aim", true);
                     }
-                    else
+                    if (finishedAiming)
                     {
-                        print("No le veo");
-                        anim.SetBool("AimWalking", true);
-                        agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
-                        Chase();
+                        finishedAiming = false;
+                        StartCoroutine("Shoot");
                     }
                 }
                 else
                 {
+                    print("No le veo");
+                    anim.SetBool("AimWalking", true);
                     agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                     Chase();
-                    anim.SetBool("AimWalking", true);
-                    print("Falla todito el raycast");
                 }
+                
                 //Si la distancia es menor a 100 ataca
                     //Si no está mirando al usuario rota hasta mirar
                     //Si le está mirando le dispara PUM PUM CHAS
@@ -197,6 +191,7 @@ public class SurvivorBehaviour : Human {
                 agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                 if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
                 {
+                    anim.SetBool("Aim", false);
                     print("Anim state: " + anim.GetCurrentAnimatorStateInfo(1).IsName("Walking"));
                     anim.SetTrigger("Walk");
                     anim.ResetTrigger("Walk");
@@ -262,6 +257,24 @@ public class SurvivorBehaviour : Human {
             inCheckpoint = true;
         }
         return inCheckpoint;
+    }
+
+    private bool CheckRayTarget()
+    {
+        bool isInLine = false;
+
+        RaycastHit hit;
+
+        Debug.DrawRay(rightHand.position, transform.forward * StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR, Color.red, -1);
+        if (Physics.Raycast(rightHand.position, transform.forward, out hit, StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR))
+        {
+            if (hit.transform.gameObject == actualTarget)
+            {
+                isInLine = true;
+            }
+        }
+
+        return isInLine;
     }
 
     private bool Chase()
@@ -426,6 +439,12 @@ public class SurvivorBehaviour : Human {
         return currentState;
     }
 
+    public void FinishAiming()
+    {
+        finishedAiming = true;
+        print("finishedAiming");
+    }
+
 
     IEnumerator waitIdle()
     {
@@ -490,5 +509,23 @@ public class SurvivorBehaviour : Human {
         yield return new WaitForSeconds(time);
         print("Removed: " + target.name);
         detectedHumans.Remove(target);
+    }
+
+    IEnumerator Shoot()
+    {
+        print(name + ": PUM");
+        anim.SetTrigger("Shoot");
+        //anim.ResetTrigger("Shoot");
+        actualTarget.GetComponent<Human>().TakeDamage(25);
+        yield return new WaitForSeconds(2.0f);
+        if (actualTarget.GetComponent<Human>().IsDead())
+        {
+            setState(AIStates.Patrol);
+        }
+        else if (CheckRayTarget())
+        {
+            StartCoroutine("Shoot");
+        }
+        yield return null;
     }
 }

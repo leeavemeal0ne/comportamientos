@@ -23,6 +23,15 @@ public class Human : MonoBehaviour {
     public void TakeDamage(float damage)
     {
         health -= damage;
+        if(health<= 0)
+        {
+            print(name + ": He muerto");
+        }
+    }
+
+    public bool IsDead()
+    {
+        return health <= 0;
     }
 
     public bool isWounded()
