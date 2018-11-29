@@ -57,7 +57,10 @@ public class SurvivorBehaviour : Human {
         }
 
         print("Creado superviviente con " + waypoints.Count + " puntos de control");
-        setState(AIStates.Patrol);
+        if (!startIdle)
+        {
+            setState(AIStates.Patrol);
+        }
         //setState(AIStates.Rest);
     }
 	
@@ -103,11 +106,6 @@ public class SurvivorBehaviour : Human {
                     agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                     Chase();
                 }
-                
-                //Si la distancia es menor a 100 ataca
-                    //Si no está mirando al usuario rota hasta mirar
-                    //Si le está mirando le dispara PUM PUM CHAS
-                //Si es mayor a 100 hace un buen Chase de puta madre
 
                 break;
             case AIStates.RunAway:
@@ -178,6 +176,7 @@ public class SurvivorBehaviour : Human {
                 }
                 break;
             case AIStates.Rest:
+                print("Descansando");
                 break;
 
         }
@@ -185,6 +184,7 @@ public class SurvivorBehaviour : Human {
 
     private void setState(AIStates state)
     {
+        anim.SetBool("Idle", false);
         switch (state)
         {
             case AIStates.Patrol:
@@ -211,9 +211,8 @@ public class SurvivorBehaviour : Human {
                 break;
             case AIStates.Rest:
                 canDoAction = false;
-                if(!anim.GetCurrentAnimatorStateInfo(0).IsName("LookAround"))
-                    anim.SetTrigger("LookAround");
-                anim.ResetTrigger("LookAround");
+                if(!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                    anim.SetBool("Idle", true);
                 break;
             case AIStates.Give:
                 StopAllCoroutines();
@@ -445,15 +444,25 @@ public class SurvivorBehaviour : Human {
         print("finishedAiming");
     }
 
+    private void ResetAnimator()
+    {
+        anim.ResetTrigger("LookAround");
+        anim.ResetTrigger("Walk");
+        anim.ResetTrigger("Shoot");
+        anim.ResetTrigger("Die");
+        anim.ResetTrigger("GetShot");
+    }
+
 
     IEnumerator waitIdle()
     {
         agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
+        ResetAnimator();
         anim.SetTrigger("LookAround");
-        anim.ResetTrigger("LookAround");
+        //anim.ResetTrigger("LookAround");
         yield return new WaitForSeconds(8.45f);
+        ResetAnimator();
         anim.SetTrigger("Walk");
-        anim.ResetTrigger("Walk");
         idleStarted = false;
         agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
     }
@@ -463,7 +472,7 @@ public class SurvivorBehaviour : Human {
         {
             yield return new WaitForSeconds(5.0f);
             float random = Random.Range(0.0f, 1.0f);
-            if (!idleStarted && random > 0.8f)
+            if (!idleStarted && random > 0.5f)
             {
                 print("Going to idle");
                 idleStarted = true;
@@ -514,6 +523,7 @@ public class SurvivorBehaviour : Human {
     IEnumerator Shoot()
     {
         print(name + ": PUM");
+        ResetAnimator();
         anim.SetTrigger("Shoot");
         //anim.ResetTrigger("Shoot");
         actualTarget.GetComponent<Human>().TakeDamage(25);

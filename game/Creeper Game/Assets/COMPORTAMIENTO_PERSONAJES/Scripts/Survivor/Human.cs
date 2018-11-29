@@ -5,14 +5,20 @@ using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 public class Human : MonoBehaviour {
     protected float health = StandardConstants.MAX_HEALTH;
-    protected int ammo = StandardConstants.MAX_AMMO;
-
+    public int ammo = StandardConstants.MAX_AMMO;
 
     protected Animator anim;
+
+    public bool startIdle = false;
 
     // Use this for initialization
     protected void Start () {
         anim = GetComponent<Animator>();
+        if (startIdle)
+        {
+            //anim.SetTrigger("Idle");
+            //anim.SetBool("Idle", true);
+        }
 	}
 	
 	// Update is called once per frame
@@ -26,6 +32,11 @@ public class Human : MonoBehaviour {
         if(health<= 0)
         {
             print(name + ": He muerto");
+            StartCoroutine("Die");
+        }
+        else
+        {
+            StartCoroutine("GetShot");
         }
     }
 
@@ -77,6 +88,19 @@ public class Human : MonoBehaviour {
         }
 
         print("Me queda la siguiente ammo: " + ammo);
+    }
+
+    IEnumerator GetShot()
+    {
+        yield return new WaitForSeconds(1.0f);
+        anim.SetTrigger("GetShot");
+    }
+
+    IEnumerator Die()
+    {
+        yield return new WaitForSeconds(1.0f);
+        anim.SetTrigger("Die");
+        Destroy(GetComponent<Human>());
     }
 
 
