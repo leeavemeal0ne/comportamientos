@@ -41,7 +41,7 @@ namespace comportamiento_personajes
         void Start()
         {
             zombieTags = new List<string>(new string[] { Tags.NORMAL_ZOMBIE });
-            survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER });
+            survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER,  "Visual_survivor"});
             parent = GetComponentInParent<FastZombieBehaviour>();
         }
 
@@ -51,7 +51,7 @@ namespace comportamiento_personajes
             if (parent.currentState.Equals(AIStates.Alerted))
             {
                 float d = Vector3.Distance(target.transform.position, transform.position);
-                if (d < 2)
+                if (d < 3)
                 {
                     parent.currentState = AIStates.Attack;
                     lookingFor = false;
@@ -73,7 +73,7 @@ namespace comportamiento_personajes
             {
                 Vector3 direction = target.transform.position - transform.position;
                 float d = Vector3.Distance(target.transform.position, transform.position);
-                if (d < 1.5)
+                if (d < 3)
                 {
                     Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
                     parent.transform.rotation = Quaternion.RotateTowards(parent.transform.rotation, rotation, 20 * Time.deltaTime);
@@ -93,7 +93,7 @@ namespace comportamiento_personajes
             //Check for a match with the specified name on any GameObject that collides with your GameObject
             bool esZombi = zombieTags.Contains(collision.gameObject.tag);
             bool esSuperviviente = survivorTags.Contains(collision.gameObject.tag);
-
+            
             //Comprobamos si el objeto dentro de nuestro radio de vista es <ombi o superviviente
             if (esZombi || esSuperviviente)
             {
@@ -104,21 +104,27 @@ namespace comportamiento_personajes
                 {
                     RaycastHit hit;
                     //Lanzamos un rayo hacia el target con el tamaño del radio de nuesta zona de vista
-                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
+                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position),17))
                     {
                         //Comprobamos que no hay objetos entre medias que nos impida ver el target
                         if (hit.transform.tag == collision.gameObject.tag)
                         {
                             float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
+                            if (target == null && (esSuperviviente || esZombi))
+                            {
+                                target = hit.transform.gameObject;
+                                distance = d;
+                                parent.currentState = AIStates.Alerted;
+                            }
                             //Si el anterior target era zombi y ahora es superviviente, vamos directos a por el superviviente
-                            if (esSuperviviente && zombieTags.Contains(target.tag))
+                            else if ((esSuperviviente && zombieTags.Contains(target.tag)))
                             {
                                 target = hit.transform.gameObject;
                                 distance = d;
                                 parent.currentState = AIStates.Alerted;
                             }
                             // Si el anterior target era del mismo tipo que el anterior, comprobamos cual está más cerca
-                            else if (target == null || esSuperviviente && survivorTags.Contains(target.tag) || esZombi && zombieTags.Contains(target.tag))
+                            else if (esSuperviviente && survivorTags.Contains(target.tag) || esZombi && zombieTags.Contains(target.tag))
                             {
                                 if (d < distance)
                                 {

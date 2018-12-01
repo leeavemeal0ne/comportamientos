@@ -17,22 +17,21 @@ public class SurvivorActions : MonoBehaviour {
 		
 	}
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        print(other.gameObject.name);
-        if (other.gameObject == survivor.getTarget())
+        if (other.gameObject == survivor.getTarget() && other.tag != "Untagged")
         {
-            print("He alcanzado a mi objetivo");
+            print("He alcanzado a mi objetivo " + other.name);
             survivor.setCanDoAction(true);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject == survivor.getTarget())
+        if (other.gameObject == survivor.getTarget() && other.tag != "Untagged")
         {
-            print("Se ha escapado el pinche puto");
-            survivor.setCanDoAction(false);
+            print("Se ha escapado el pinche puto" + other.name);
+            //survivor.setCanDoAction(false);
         }
     }
 }

@@ -11,5 +11,9 @@ namespace Assets.COMPORTAMIENTO_PERSONAJES.Constantes
         public const float SURVIVOR_RUNNING_SPEED = 2.0f;
         public const float SURVIVOR_WALKING_SPEED = 1.0f;
         public const float SURVIVOR_IDLE_SPEED = 0.0f;
+        public const float SURVIVOR_DETECT_DIST = 100.0f;
+        public const int MAX_AMMO = 10;
+        public const float MAX_HEALTH = 100.0f;
+        public const int SURVIVOR_AMMO_TO_GIVE = 5;
     }
 }

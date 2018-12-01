@@ -48,7 +48,7 @@ public class FastZombieBehaviour : Zombie {
     
 
     //life
-    private int life = 10000;
+    private int life = 100;
 
     // Use this for initialization
     void Start()
@@ -144,8 +144,9 @@ public class FastZombieBehaviour : Zombie {
         //activar animación de daño
         StopAllCoroutines();
         setAgentParameters(0, 0);
-        agent.ResetPath();
+        //agent.ResetPath();
         gameObject.tag = "Dead";
+        isDead = true;
         this.enabled = false;
     }
     #endregion
@@ -212,7 +213,7 @@ public class FastZombieBehaviour : Zombie {
     // Update is called once per frame
     void Update()
     {
-        if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
+        if (!currentState.Equals(AIStates.Feeding) && !currentState.Equals(AIStates.Attack) && !currentState.Equals(AIStates.Alerted) && !feeding && coroutinePatrolEnded)
         {
             hungry -= hungry_time;
             if (hungry < 0)
@@ -228,7 +229,7 @@ public class FastZombieBehaviour : Zombie {
         else if (feeding && coroutinePatrolEnded)
         {
             hungry += hungry_time * 50;
-            Debug.Log("Hungry Level = " + hungry);
+           // Debug.Log("Hungry Level = " + hungry);
             if (hungry >= 90f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
                 Debug.Log("ENTRO IF FEEDING UPDATE");
@@ -380,6 +381,7 @@ public class FastZombieBehaviour : Zombie {
             son.distance = 100;
             currentState = AIStates.Patrol;
             son.attacking = false;
+            son.target = null;
         }
     }
 }
