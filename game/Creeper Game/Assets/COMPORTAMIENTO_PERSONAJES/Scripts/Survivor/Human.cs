@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
+using comportamiento_personajes;
+using UnityEngine.AI;
+using UnityEngine.UI;
 
-public class Human : MonoBehaviour {
+public class Human : Zombie {
     protected float health = StandardConstants.MAX_HEALTH;
     public int ammo = StandardConstants.MAX_AMMO;
 
@@ -11,13 +14,16 @@ public class Human : MonoBehaviour {
 
     public bool startIdle = false;
 
+    public Text healthText;
+    public Text ammoText;
+
     // Use this for initialization
     protected void Start () {
         anim = GetComponent<Animator>();
         if (startIdle)
         {
             //anim.SetTrigger("Idle");
-            //anim.SetBool("Idle", true);
+            anim.SetBool("Idle", true);
         }
 	}
 	
@@ -26,7 +32,12 @@ public class Human : MonoBehaviour {
 		
 	}
 
-    public void TakeDamage(float damage)
+    public override void startToEat()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void TakeDamage(int damage)
     {
         health -= damage;
         if(health<= 0)
@@ -38,9 +49,11 @@ public class Human : MonoBehaviour {
         {
             StartCoroutine("GetShot");
         }
+
+        healthText.text = "Health: " + health + "/" + StandardConstants.MAX_HEALTH;
     }
 
-    public bool IsDead()
+    public override bool getIsDead()
     {
         return health <= 0;
     }
@@ -69,6 +82,13 @@ public class Human : MonoBehaviour {
             ammo += giverAmmo;
         }
         giver.removeAmmo(quantity);
+        setAmmoText();
+        giver.setAmmoText();
+    }
+
+    public void setAmmoText()
+    {
+        ammoText.text = "Ammo: " + ammo; 
     }
 
     public int getAmmo()
@@ -100,7 +120,15 @@ public class Human : MonoBehaviour {
     {
         yield return new WaitForSeconds(1.0f);
         anim.SetTrigger("Die");
-        Destroy(GetComponent<Human>());
+
+        Collider[] c = GetComponentsInChildren<Collider>();
+        Destroy(GetComponent<NavMeshAgent>());
+        foreach(Collider col in c)
+        {
+            Destroy(col);
+        }
+
+        GetComponent<Rigidbody>().useGravity = false;
     }
 
 
