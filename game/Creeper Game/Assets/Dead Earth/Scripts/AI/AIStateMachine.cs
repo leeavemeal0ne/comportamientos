@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 // Public Enums of the AI System
-public enum AIStateType 		{ None, Idle, Alerted, Patrol, Attack, Feeding, Pursuit, Dead }
+public enum AIStateType 		{ None, Idle, Alerted, Patrol, Attack, Feeding, Pursuit, Dead, Throw }
 public enum AITargetType		{ None, Waypoint, Visual_Player, Visual_Light, Visual_Food, Audio }
 public enum AITriggerEventType	{ Enter, Stay, Exit }
 public enum AIBoneAlignmentType { XAxis, YAxis, ZAxis, XAxisInverted, YAxisInverted, ZAxisInverted }
