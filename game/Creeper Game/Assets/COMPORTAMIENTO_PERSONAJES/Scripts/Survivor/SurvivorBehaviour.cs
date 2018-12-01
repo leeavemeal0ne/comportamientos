@@ -251,6 +251,7 @@ public class SurvivorBehaviour : Human {
                     break;
                 case AIStates.Rest:
                     canDoAction = false;
+                    agent.speed = 0;
                     if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
                         anim.SetBool("Idle", true);
                     break;
@@ -405,7 +406,8 @@ public class SurvivorBehaviour : Human {
 
     public void DetectHuman(GameObject human)
     {
-        print("Detecting Human");
+
+        human.GetComponent<SurvivorBehaviour>().ReceiveContact(this.gameObject);
         if (goodness > 50)
         {
             if (human.GetComponent<Human>().isWounded())
@@ -423,6 +425,7 @@ public class SurvivorBehaviour : Human {
             if (goodness < 30)
             {
                 setState(AIStates.Attack);
+                print(name + " attacking " + actualTarget.name);
             }
             else
             {
@@ -475,6 +478,8 @@ public class SurvivorBehaviour : Human {
 
     private void ResetAnimator()
     {
+        anim.SetBool("Touch", false);
+        anim.SetBool("Idle", false);
         anim.ResetTrigger("LookAround");
         anim.ResetTrigger("Walk");
         anim.ResetTrigger("Shoot");
@@ -482,6 +487,20 @@ public class SurvivorBehaviour : Human {
         anim.ResetTrigger("GetShot");
     }
 
+    public void ReceiveContact(GameObject human)
+    {
+        StopAllCoroutines();
+        IEnumerator specificReset = resetDetection(30.0f, human);
+        StartCoroutine(specificReset);
+        setState(AIStates.Rest);
+        StartCoroutine("StopIdle");
+    }
+
+    IEnumerator StopIdle()
+    {
+        yield return new WaitForSeconds(4.0f);
+        setState(AIStates.Patrol);
+    }
 
     IEnumerator waitIdle()
     {
@@ -528,7 +547,6 @@ public class SurvivorBehaviour : Human {
     IEnumerator GiveAmmo()
     {
         canDetect = false;
-        detectedHumans.Add(actualTarget);
         IEnumerator specificReset = resetDetection(30.0f, actualTarget);
         StartCoroutine(specificReset);
         yield return new WaitForSeconds(2.0f);
@@ -540,10 +558,11 @@ public class SurvivorBehaviour : Human {
         givingAmmo = false;        
     }
 
+
+
     IEnumerator StealAmmo()
     {
         canDetect = false;
-        detectedHumans.Add(actualTarget);
         IEnumerator specificReset = resetDetection(30.0f, actualTarget);
         StartCoroutine(specificReset);
         yield return new WaitForSeconds(2.0f);
@@ -557,6 +576,10 @@ public class SurvivorBehaviour : Human {
 
     IEnumerator resetDetection(float time, GameObject target)
     {
+        if (!detectedHumans.Contains(target))
+        {
+            detectedHumans.Add(target);
+        }
         yield return new WaitForSeconds(time);
         print("Removed: " + target.name);
         detectedHumans.Remove(target);
