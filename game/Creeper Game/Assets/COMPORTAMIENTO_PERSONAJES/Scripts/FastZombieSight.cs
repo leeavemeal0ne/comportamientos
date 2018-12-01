@@ -104,21 +104,27 @@ namespace comportamiento_personajes
                 {
                     RaycastHit hit;
                     //Lanzamos un rayo hacia el target con el tamaño del radio de nuesta zona de vista
-                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
+                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position),17))
                     {
                         //Comprobamos que no hay objetos entre medias que nos impida ver el target
                         if (hit.transform.tag == collision.gameObject.tag)
                         {
                             float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
+                            if (target == null && esSuperviviente || esZombi)
+                            {
+                                target = hit.transform.gameObject;
+                                distance = d;
+                                parent.currentState = AIStates.Alerted;
+                            }
                             //Si el anterior target era zombi y ahora es superviviente, vamos directos a por el superviviente
-                            if (target == null || (esSuperviviente && zombieTags.Contains(target.tag)))
+                            else if ((esSuperviviente && zombieTags.Contains(target.tag)))
                             {
                                 target = hit.transform.gameObject;
                                 distance = d;
                                 parent.currentState = AIStates.Alerted;
                             }
                             // Si el anterior target era del mismo tipo que el anterior, comprobamos cual está más cerca
-                            else if (target == null || esSuperviviente && survivorTags.Contains(target.tag) || esZombi && zombieTags.Contains(target.tag))
+                            else if (esSuperviviente && survivorTags.Contains(target.tag) || esZombi && zombieTags.Contains(target.tag))
                             {
                                 if (d < distance)
                                 {
