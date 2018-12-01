@@ -74,11 +74,11 @@ namespace comportamiento_personajes
             //Si la lista no contiene al objeto que entra sale
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
-                //Debug.Log("RETURN");
                 return;
             }
             else
             {
+                //cambiamos el estado 
                 if (canSeeEnemy(other))
                 {
                     if(zb.currentState == AIStates.Patrol)
@@ -91,14 +91,14 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
-            //Debug.Log("Enemigos en lista = " + EnemySight.Count);
 
-            //Si esta comiendo no hace nada
+            //Si esta comiendo no hace nada o si está atacando
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
                 return;
             }
             
+            //primero vemos si puedo ver al enemigo y después elegimos el objetivo si hay
             canSeeEnemy(other);
             chooseTarget();
         }
@@ -107,6 +107,7 @@ namespace comportamiento_personajes
         {
             if (zb.feeding) return;
 
+            //cuando sale de nuestra área de influencia borramos del array y actualizamos nuestro estado
             if (EnemySight.Contains(other.gameObject))
             {
                 Debug.Log("Borro el enemigo a la salida");
@@ -118,8 +119,13 @@ namespace comportamiento_personajes
             
         }
 
+        /// <summary>
+        /// Elige el objetivo, tenemos una lista de enemigos a la vista, si no está a la vista no hacemos nada y volvemos a
+        /// modo patrulla
+        /// </summary>
         private void chooseTarget()
-        {           
+        {      
+            //Si no hay enemigos a la vista volvemos a patrol
             if(EnemySight.Count <= 0)
             {
                 if(zb.currentState == AIStates.Alerted)
@@ -130,17 +136,20 @@ namespace comportamiento_personajes
                     zb.backToPatrol();
                 }
             }
+            //si solo hay un objetivo le elegimos
             else if(EnemySight.Count == 1)
             {
                 //Debug.Log("ENEMY SIGHT = 1, tag = " + EnemySight[0].name);
                 target = EnemySight[0];
                 distance = Vector3.Distance(target.transform.position, this.transform.position);
             }
+            //calculamos cuál está mas cerca
             else
             {
                 //Debug.Log("ENEMY SIGHT = " + EnemySight.Count);
                 foreach (GameObject g in EnemySight)
                 {
+                    //Si la distancia al objetivo es menor a 3 no calculamos nada nos quedamos con el target que tengamos
                     if(distance < 3)
                     {
                         Debug.Log("Distance < 2");
@@ -153,7 +162,7 @@ namespace comportamiento_personajes
                     }
                     else
                     {
-                        //Debug.Log("Else");
+                        //Elegimos el de menor distancia
                         float dis = Vector3.Distance(g.transform.position, this.transform.position);
                         if (dis < distance)
                         {
@@ -164,6 +173,7 @@ namespace comportamiento_personajes
                     }                  
                 }
             }
+            //actualizamos posiciones y destino del navmeshAgent
             if(target != null)
             {
                 target_name = target.name;
@@ -173,6 +183,12 @@ namespace comportamiento_personajes
             }          
         }
 
+        /// <summary>
+        /// Calcula si vemos al personaje con un angulo prefijado si está dentro de ese ángulo el superviviente
+        /// y no hay nada entre el y el zombie le perseguimos
+        /// sino no hacemos nada
+        /// </summary>
+        /// <param name="other"></param>
         private bool canSeeEnemy(Collider other)
         {
             bool canSee = false;
@@ -224,73 +240,6 @@ namespace comportamiento_personajes
             
             //currentState = AIStateType.Patrol;
             StopAllCoroutines();
-        }
-
-        /// <summary>
-        /// Calcula si vemos al personaje con un angulo prefijado si está dentro de ese ángulo el superviviente
-        /// y no hay nada entre el y el zombie le perseguimos
-        /// sino no hacemos nada
-        /// </summary>
-        /// <param name="other"></param>
-        private void calculateSight(Collider other)
-        {
-            playerInSight = false;
-
-            if (players.Contains(other.gameObject))
-            {               
-                Vector3 direction = other.transform.position - this.transform.position;
-                float angle = Vector3.Angle(direction, transform.forward);
-
-                if (angle < fieldOfViewAngle * 0.5f)
-                {
-                    float tempDistance = -1;
-                    RaycastHit hit;
-                    Debug.DrawRay(transform.position, direction);
-                    if (Physics.Raycast(transform.position, direction.normalized, out hit, col.radius))
-                    {
-                        float d = Vector3.Distance(other.gameObject.transform.position, transform.position);
-                        //Debug.Log("DISTANCIA ZOMBIE NUEVO = " + d);
-                        float zombie_d = 100;
-                        if (target != null)
-                        {
-                            zombie_d = Vector3.Distance(target.transform.position, transform.position);
-                            //Debug.Log("DISTANCIA ZOMBIE TARGET---- = " + zombie_d);
-                            tempDistance = Vector3.Distance(other.transform.position, target.transform.position);
-                            //Debug.Log("DISTANCIA ENTRE ZOMBIES---- = " + tempDistance);
-                        }
-                            
-                        if (players.Contains(hit.collider.gameObject))
-                        {                             
-                            if(target == null)
-                            {
-                                if(target == hit.collider.gameObject)
-                                {
-                                    Debug.Log("TE VEOOO llego a persecution point PRIMER IF----");
-                                    playerInSight = true;
-                                    target = hit.collider.gameObject;
-                                    zb.setPersecutionPoint(target.transform.position);
-                                    distance = d;
-                                }
-                            }
-                            else if((d+minDistance) <= distance && target != null)
-                            {
-                                Debug.Log("TE VEOOO llego a persecution point SEGUNDO IF----");
-
-                                playerInSight = true;
-                                target = hit.collider.gameObject;
-                                zb.setPersecutionPoint(target.transform.position);
-                                distance = d;
-                            }                           
-                        }                        
-                    }                   
-                    direction = Quaternion.Euler(0, -40, 0) * direction;
-                    Debug.DrawRay(transform.position, direction, Color.blue);
-                    direction = Quaternion.Euler(0, 80, 0) * direction;
-                    Debug.DrawRay(transform.position, direction, Color.blue);
-                    Debug.DrawLine(transform.position, hit.point,Color.red);
-                }
-            }
-        }
-       
+        }  
     }
 }
