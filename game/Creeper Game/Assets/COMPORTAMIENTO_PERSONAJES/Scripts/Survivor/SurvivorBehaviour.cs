@@ -19,11 +19,14 @@ public class SurvivorBehaviour : Human {
     private List<Transform> waypoints;
     private int actualWayPoint = 0;
 
-    private List<string> zombieTags;
-    private List<string> survivorTags;
+    [HideInInspector]
+    public List<string> zombieTags;
+    [HideInInspector]
+    public List<string> survivorTags;
 
     //En esta lista se meterán los humanos que se detecten para no volver a detectarlos en un tiempo después de realizar la acción
-    private List<GameObject> detectedHumans;
+    [HideInInspector]
+    public List<GameObject> detectedHumans;
 
     public Transform rightHand;
 
@@ -32,11 +35,19 @@ public class SurvivorBehaviour : Human {
     private AIStates currentState = AIStates.Patrol;
 
     /* VARIABLES PARA PERSEGUIR */
-    GameObject actualTarget;
-    float distance = StandardConstants.SURVIVOR_DETECT_DIST;
+    [HideInInspector]
+    public GameObject actualTarget;
+
+    public LayerMask mask;
+
+    [HideInInspector]
+    public float distance = StandardConstants.SURVIVOR_DETECT_DIST;
+
     private bool canAttack = false;
     private bool canDoAction = false;
-    private bool canDetect = true;
+    [HideInInspector]
+    public bool canDetect = true;
+
     private bool healing = false;
     private bool givingAmmo = false;
     private bool isAiming = false;
@@ -89,6 +100,7 @@ public class SurvivorBehaviour : Human {
                     Vector3 relPos = realObjectPos - transform.position;
                     Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
                     transform.rotation = rot;
+                    print("Finished Aiming " + finishedAiming);
                     if (!isAiming)
                     {
                         anim.SetBool("Aim", true);
@@ -96,12 +108,20 @@ public class SurvivorBehaviour : Human {
                     if (finishedAiming)
                     {
                         finishedAiming = false;
+                        print("Starting shooting corroutine");
                         StartCoroutine("Shoot");
                     }
                 }
                 else
                 {
+                    if (actualTarget.GetComponent<Human>().getIsDead())
+                    {
+                        print("Ha muerto");
+                        distance = StandardConstants.SURVIVOR_DETECT_DIST;
+                        setState(AIStates.Patrol);
+                    }
                     print("No le veo");
+                    //finishedAiming = false;
                     anim.SetBool("AimWalking", true);
                     agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                     Chase();
@@ -121,16 +141,6 @@ public class SurvivorBehaviour : Human {
                     setState(AIStates.Rest);
                 }
 
-                break;
-            case AIStates.Steal:
-                if (!canDoAction)
-                {
-                    Chase();
-                }
-                else
-                {
-                    print("Robando");
-                }
                 break;
             case AIStates.Heal:
                 if (!canDoAction)
@@ -175,6 +185,25 @@ public class SurvivorBehaviour : Human {
                     setState(AIStates.Patrol);
                 }
                 break;
+            case AIStates.Steal:
+                print("CanDoAction: " + canDoAction);
+                if (!canDoAction)
+                {
+                    Chase();
+                }
+                else
+                {
+                    print("Not chasing: " + givingAmmo);
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle") && !givingAmmo)
+                    {
+                        agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
+                        ResetAnimator();
+                        anim.SetBool("Touch", true);
+                        givingAmmo = true;
+                        StartCoroutine("StealAmmo");
+                    }
+                }
+                break;
             case AIStates.Rest:
                 print("Descansando");
                 break;
@@ -184,48 +213,77 @@ public class SurvivorBehaviour : Human {
 
     private void setState(AIStates state)
     {
-        anim.SetBool("Idle", false);
-        switch (state)
+        if (currentState != state)
         {
-            case AIStates.Patrol:
-                agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
-                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
-                {
-                    anim.SetBool("Aim", false);
-                    print("Anim state: " + anim.GetCurrentAnimatorStateInfo(1).IsName("Walking"));
-                    anim.SetTrigger("Walk");
-                    anim.ResetTrigger("Walk");
-                }
-                idleStarted = false;
-                canDoAction = false;
-                StartCoroutine("checkIdle");
-                break;
-            case AIStates.RunAway:
-                agent.speed = StandardConstants.SURVIVOR_RUNNING_SPEED;
-                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
-                {
-                    anim.SetTrigger("Walk");
-                    anim.ResetTrigger("Walk");
-                }
-                StopAllCoroutines();
-                break;
-            case AIStates.Rest:
-                canDoAction = false;
-                if(!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
-                    anim.SetBool("Idle", true);
-                break;
-            case AIStates.Give:
-                StopAllCoroutines();
-                agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
-                if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
-                {
-                    anim.SetTrigger("Walk");
-                    anim.ResetTrigger("Walk");
-                }
-                break;
-            default:
-                StopAllCoroutines();
-                break;
+            anim.SetBool("Idle", false);
+            switch (state)
+            {
+                case AIStates.Patrol:
+                    agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                    {
+                        anim.SetBool("Aim", false);
+                        anim.SetBool("AimWalking", false);
+                        ResetAnimator();
+                        anim.SetTrigger("Walk");
+                    }
+                    idleStarted = false;
+                    canDoAction = false;
+                    StartCoroutine("checkIdle");
+                    break;
+                case AIStates.RunAway:
+                    agent.speed = StandardConstants.SURVIVOR_RUNNING_SPEED;
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                    {
+                        ResetAnimator();
+                        anim.SetTrigger("Walk");
+                    }
+                    StopAllCoroutines();
+                    break;
+                case AIStates.Rest:
+                    canDoAction = false;
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+                        anim.SetBool("Idle", true);
+                    break;
+                case AIStates.Give:
+                    givingAmmo = false;
+                    StopAllCoroutines();
+                    agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
+                    if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                    {
+                        ResetAnimator();
+                        anim.SetTrigger("Walk");
+                    }
+                    break;
+                case AIStates.Steal:
+                    givingAmmo = false;
+                    StopAllCoroutines();
+                    if (actualTarget.GetComponent<Human>().getAmmo() <= 0)
+                    {
+                        setState(AIStates.RunAway);
+                    }
+                    else
+                    {
+                        agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
+                        if (!anim.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+                        {
+                            ResetAnimator();
+                            anim.SetTrigger("Walk");
+                        }
+                    }
+                    break;
+                case AIStates.Attack:
+                    if (currentState != AIStates.Attack)
+                    {
+                        isAiming = false;
+                        finishedAiming = false;
+                        agent.speed = 0;
+                    }
+                    break;
+                default:
+                    StopAllCoroutines();
+                    break;
+            }
         }
         currentState = state;
     }
@@ -264,12 +322,19 @@ public class SurvivorBehaviour : Human {
 
         RaycastHit hit;
 
-        Debug.DrawRay(rightHand.position, transform.forward * StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR, Color.red, -1);
-        if (Physics.Raycast(rightHand.position, transform.forward, out hit, StandardConstants.DISTANCE_TO_RUNAWAY_SURVIVOR))
+        Vector3 direction = actualTarget.transform.position - transform.position;
+
+        print("ActualTargetRay: " + actualTarget);
+        Debug.DrawRay(transform.position, direction, Color.red, -1);
+        if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, transform.position)*2, mask))
         {
             if (hit.transform.gameObject == actualTarget)
             {
                 isInLine = true;
+            }
+            else
+            {
+                print("Collider: " + hit.transform.name);
             }
         }
 
@@ -311,7 +376,7 @@ public class SurvivorBehaviour : Human {
     }
 
 
-    private void DetectZombi()
+    public void DetectZombi()
     {
         if (ammo > 0)
         {
@@ -323,8 +388,9 @@ public class SurvivorBehaviour : Human {
         }
     }
 
-    private void DetectHuman(GameObject human)
+    public void DetectHuman(GameObject human)
     {
+        print("Detecting Human");
         if (goodness > 50)
         {
             if (human.GetComponent<Human>().isWounded())
@@ -350,59 +416,7 @@ public class SurvivorBehaviour : Human {
         }
     }
 
-    void OnTriggerStay(Collider collision)
-    {
-        print("CanDetect: " + canDetect);
-        if (canDetect && !detectedHumans.Contains(collision.gameObject))
-        {
-            if (zombieTags.Contains(collision.gameObject.tag) || survivorTags.Contains(collision.gameObject.tag))
-            {
-                Vector3 direction = collision.gameObject.transform.position - transform.position;
-                float angle = Vector3.Angle(direction, transform.forward);
-                if (angle < 30.0f)
-                {
-                    RaycastHit hit;
-                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position)))
-                    {
-                        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-                        if (zombieTags.Contains(hit.transform.tag) || survivorTags.Contains(hit.transform.tag))
-                        {
-                            print("Distace: " + distance);
-                            float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
-                            if (d < distance)
-                            {
-                                actualTarget = hit.transform.gameObject;
-                                StopAllCoroutines();
-                                if (zombieTags.Contains(hit.transform.tag))
-                                {
-                                    //Hemos detectado un zombie
-                                    DetectZombi();
-
-                                }
-                                else
-                                {
-                                    //Hemos detectado un humano
-                                    DetectHuman(hit.transform.gameObject);
-                                }
-                                print("Detectado " + collision.gameObject.tag);
-
-                            }
-                            else
-                            {
-                                print("Distance: " + distance);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
-                        Debug.Log("Did not Hit");
-                    }
-                }
-
-            }
-        }
-    }
+    
 
     private void OnDrawGizmos()
     {
@@ -440,7 +454,7 @@ public class SurvivorBehaviour : Human {
 
     public void FinishAiming()
     {
-        finishedAiming = true;
+        this.finishedAiming = true;
         print("finishedAiming");
     }
 
@@ -459,7 +473,6 @@ public class SurvivorBehaviour : Human {
         agent.speed = StandardConstants.SURVIVOR_IDLE_SPEED;
         ResetAnimator();
         anim.SetTrigger("LookAround");
-        //anim.ResetTrigger("LookAround");
         yield return new WaitForSeconds(8.45f);
         ResetAnimator();
         anim.SetTrigger("Walk");
@@ -507,10 +520,24 @@ public class SurvivorBehaviour : Human {
         actualTarget.GetComponent<Human>().GiveAmmo(this, StandardConstants.SURVIVOR_AMMO_TO_GIVE);
         distance = StandardConstants.SURVIVOR_DETECT_DIST;
         anim.SetBool("Touch", false);
-        setState(AIStates.Patrol);
+        setState(AIStates.RunAway);
+        canDetect = true;
+        givingAmmo = false;        
+    }
+
+    IEnumerator StealAmmo()
+    {
+        canDetect = false;
+        detectedHumans.Add(actualTarget);
+        IEnumerator specificReset = resetDetection(30.0f, actualTarget);
+        StartCoroutine(specificReset);
+        yield return new WaitForSeconds(2.0f);
+        GetComponent<Human>().GiveAmmo(actualTarget.GetComponent<Human>(), StandardConstants.SURVIVOR_AMMO_TO_GIVE);
+        distance = StandardConstants.SURVIVOR_DETECT_DIST;
+        anim.SetBool("Touch", false);
+        setState(AIStates.RunAway);
         canDetect = true;
         givingAmmo = false;
-        
     }
 
     IEnumerator resetDetection(float time, GameObject target)
@@ -525,16 +552,21 @@ public class SurvivorBehaviour : Human {
         print(name + ": PUM");
         ResetAnimator();
         anim.SetTrigger("Shoot");
-        //anim.ResetTrigger("Shoot");
         actualTarget.GetComponent<Human>().TakeDamage(25);
         yield return new WaitForSeconds(2.0f);
-        if (actualTarget.GetComponent<Human>().IsDead())
+        if (actualTarget.GetComponent<Human>().getIsDead())
         {
+            print("Ha muerto");
             setState(AIStates.Patrol);
         }
         else if (CheckRayTarget())
         {
             StartCoroutine("Shoot");
+            print("Restarting");
+        }
+        else
+        {
+            print("no ha muerto");
         }
         yield return null;
     }
