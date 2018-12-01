@@ -27,7 +27,7 @@ public class SurvivorDetection : MonoBehaviour {
                 if (angle < 30.0f)
                 {
                     RaycastHit hit;
-                    if (Physics.Raycast(survivor.transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, survivor.transform.position)))
+                    if (Physics.Raycast(survivor.transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, survivor.transform.position), survivor.mask))
                     {
                         Debug.DrawRay(survivor.transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
                         if (survivor.zombieTags.Contains(hit.transform.tag) || survivor.survivorTags.Contains(hit.transform.tag))

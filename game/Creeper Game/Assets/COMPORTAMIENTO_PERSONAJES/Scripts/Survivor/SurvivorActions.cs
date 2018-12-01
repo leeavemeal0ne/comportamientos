@@ -17,7 +17,7 @@ public class SurvivorActions : MonoBehaviour {
 		
 	}
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (other.gameObject == survivor.getTarget() && other.tag != "Untagged")
         {

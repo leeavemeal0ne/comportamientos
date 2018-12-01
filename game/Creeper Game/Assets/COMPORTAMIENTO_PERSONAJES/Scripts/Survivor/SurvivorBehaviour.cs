@@ -29,7 +29,7 @@ public class SurvivorBehaviour : Human {
     [HideInInspector]
     public List<GameObject> detectedHumans;
 
-    public Transform rightHand;
+    public Transform head;
 
     /*VARIABLES PARA CAMBIAR DE ESTADO*/
     private bool idleStarted = false;
@@ -93,7 +93,6 @@ public class SurvivorBehaviour : Human {
                 Patrol();
                 break;
             case AIStates.Attack:                
-                print("Attacking at a distance: " + distance);
                 if (CheckRayTarget())
                 {
                     agent.speed = 0;
@@ -105,7 +104,9 @@ public class SurvivorBehaviour : Human {
                     print("Finished Aiming " + finishedAiming);
                     if (!isAiming)
                     {
+                        isAiming = true;
                         anim.SetBool("Aim", true);
+                        agent.speed = 0;
                     }
                     if (finishedAiming && !isShooting)
                     {
@@ -114,7 +115,7 @@ public class SurvivorBehaviour : Human {
                         StartCoroutine("Shoot");
                     }
                 }
-                else
+                else if(finishedAiming)
                 {
                     if (actualTarget.GetComponent<Zombie>().getIsDead())
                     {
@@ -122,12 +123,16 @@ public class SurvivorBehaviour : Human {
                         distance = StandardConstants.SURVIVOR_DETECT_DIST;
                         setState(AIStates.Patrol);
                     }
-                    print("No le veo");
                     //finishedAiming = false;
                     anim.SetBool("AimWalking", true);
                     agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                     Chase();
                     isShooting = false;
+                    StopAllCoroutines();
+                }
+                else
+                {
+                    print(finishedAiming);
                 }
 
                 break;
@@ -219,6 +224,7 @@ public class SurvivorBehaviour : Human {
         if (currentState != state)
         {
             anim.SetBool("Idle", false);
+            canDoAction = false;
             switch (state)
             {
                 case AIStates.Patrol:
@@ -325,20 +331,26 @@ public class SurvivorBehaviour : Human {
 
         RaycastHit hit;
 
-        Vector3 direction = actualTarget.transform.position - transform.position;
+        Vector3 direction = actualTarget.transform.position - head.position;
 
         print("ActualTargetRay: " + actualTarget);
-        Debug.DrawRay(transform.position, direction, Color.red, -1);
-        if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, transform.position)*2, mask))
+        Debug.DrawRay(head.position, direction, Color.red, -1);
+        if (Physics.Raycast(head.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, head.position)*2, mask))
         {
             if (hit.transform.gameObject == actualTarget)
             {
                 isInLine = true;
             }
-            else
-            {
-                print("Collider: " + hit.transform.name);
-            }
+        }
+        if (Vector3.Distance(actualTarget.transform.position, transform.position)<=1)
+        {
+            isInLine = true;
+        }
+
+        if (!isInLine)
+        {
+            print("Collider: " +hit.transform.name);
+            print("Distance:" + Vector3.Distance(actualTarget.transform.position, transform.position));
         }
 
         return isInLine;
@@ -552,6 +564,7 @@ public class SurvivorBehaviour : Human {
 
     IEnumerator Shoot()
     {
+        isShooting = true;
         print(name + ": PUM");
         ResetAnimator();
         anim.SetTrigger("Shoot");
