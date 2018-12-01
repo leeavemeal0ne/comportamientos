@@ -212,7 +212,7 @@ public class FastZombieBehaviour : Zombie {
     // Update is called once per frame
     void Update()
     {
-        if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
+        if (!currentState.Equals(AIStates.Feeding) && !currentState.Equals(AIStates.Attack) && !currentState.Equals(AIStates.Alerted) && !feeding && coroutinePatrolEnded)
         {
             hungry -= hungry_time;
             if (hungry < 0)

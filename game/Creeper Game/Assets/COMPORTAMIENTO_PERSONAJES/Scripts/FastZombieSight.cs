@@ -41,7 +41,7 @@ namespace comportamiento_personajes
         void Start()
         {
             zombieTags = new List<string>(new string[] { Tags.NORMAL_ZOMBIE });
-            survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER });
+            survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER,  "Visual_survivor"});
             parent = GetComponentInParent<FastZombieBehaviour>();
         }
 
@@ -111,7 +111,7 @@ namespace comportamiento_personajes
                         {
                             float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
                             //Si el anterior target era zombi y ahora es superviviente, vamos directos a por el superviviente
-                            if (esSuperviviente && zombieTags.Contains(target.tag))
+                            if (target == null || (esSuperviviente && zombieTags.Contains(target.tag)))
                             {
                                 target = hit.transform.gameObject;
                                 distance = d;
