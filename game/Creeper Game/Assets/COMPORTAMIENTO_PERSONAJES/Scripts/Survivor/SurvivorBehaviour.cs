@@ -349,8 +349,8 @@ public class SurvivorBehaviour : Human {
 
         if (!isInLine)
         {
-            print("Collider: " +hit.transform.name);
-            print("Distance:" + Vector3.Distance(actualTarget.transform.position, transform.position));
+            //print("Collider: " +hit.transform.name);
+            //print("Distance:" + Vector3.Distance(actualTarget.transform.position, transform.position));
         }
 
         return isInLine;

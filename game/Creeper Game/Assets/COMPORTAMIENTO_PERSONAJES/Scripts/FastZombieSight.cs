@@ -93,7 +93,7 @@ namespace comportamiento_personajes
             //Check for a match with the specified name on any GameObject that collides with your GameObject
             bool esZombi = zombieTags.Contains(collision.gameObject.tag);
             bool esSuperviviente = survivorTags.Contains(collision.gameObject.tag);
-
+            
             //Comprobamos si el objeto dentro de nuestro radio de vista es <ombi o superviviente
             if (esZombi || esSuperviviente)
             {
@@ -110,7 +110,7 @@ namespace comportamiento_personajes
                         if (hit.transform.tag == collision.gameObject.tag)
                         {
                             float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
-                            if (target == null && esSuperviviente || esZombi)
+                            if (target == null && (esSuperviviente || esZombi))
                             {
                                 target = hit.transform.gameObject;
                                 distance = d;
