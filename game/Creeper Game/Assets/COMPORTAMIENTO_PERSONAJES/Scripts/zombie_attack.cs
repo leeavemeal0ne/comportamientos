@@ -36,7 +36,7 @@ namespace comportamiento_personajes
                 return;
             }
 
-            //Debug.Log("Entro en attack Collider, is Attacking = " + zb_attack.getisAttacking());
+            //si el gameObject que entra es igual a nuestro target le atacamos y cambiamos el estado
             if (zs.Attack(other))
             {
                 Debug.Log("ONTRIGGER ENTER ENTRO SEGUNDO IF DEBERÍA ATACAR");
@@ -56,12 +56,14 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
+            //si el collider que entra no es nuestro objetivo, el array de enemigos está a 0 porque no le vemos y demás no hacemos nada
             if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
                 //Debug.Log("SALGO");
                 return;
             }
 
+            //calculamos la distancia al target si es menor a 1 dejamos de andar y atacamos, sino volvemos a andar
             float distance = Vector3.Distance(parent_transform.position, zs.target.transform.position);
             Debug.Log("Distancia a OBJETIVO: " + distance);
 
@@ -76,22 +78,23 @@ namespace comportamiento_personajes
             }
             else
             {
+                //usamos las constantes de la clase basic_behaviour
                 zs.zb.setAgentParameters(zs.zb.getAgentSpeed(), zs.zb.getAgentRotationSpeed());
+                //activamos la animación andar
                 zs.zb.setAnimatorParameters("Speed", 1);
             }
 
             if (zs.Attack(other) && available)
             {
-                //zs.zb.transform.rotation = Quaternion.Lerp(zs.zb.transform.rotation, zs.target.transform.rotation, 2 * Time.deltaTime);
-                //zs.zb.transform.LookAt(zs.target.transform);
+                //activamos animación de atacar y esperamos hasta que termine
                 zs.zb.setAnimatorTriggerParameters("Attack_trigger");
                 StartCoroutine(animationFinish());                         
             }
 
             if (zs.target != null && zs.Attack(other))
             {
+                //miramos al objetivo
                 zs.zb.transform.LookAt(zs.target.transform);
-                //zs.zb.transform.rotation = Quaternion.Lerp(zs.zb.transform.rotation, zs.target.transform.rotation, 5 * Time.deltaTime);
             }
         }
 
