@@ -5,45 +5,49 @@ using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
 
 namespace comportamiento_personajes
 {
-    public class zombie_attack : zombie_sight
+    public class zombie_attack : MonoBehaviour
     {
         //private string TAG_ATTACK;
 
-        private Transform parent_transform;
+        public Transform parent_transform;
         //para entrar dentro del if
         private bool available;
         //path por el que va a moverse el zombie
         public AnimationClip animation_attack;
         private SphereCollider spCol;
 
-        private void Awake()
+        public zombie_sight zs;
+
+        private void Start()
         {
             spCol = GetComponentInParent<SphereCollider>();
+
             //Si está disponible para ejecutar la animación
             available = true;
             //transform del padre
             parent_transform = GetComponentInParent<Transform>();
-            Debug.Log("TAG = " + TAG  /*+ " ZB = " + zb_attack.currentState.ToString()*/);
+            Debug.Log("TAG = " + zs.TAG  /*+ " ZB = " + zb_attack.currentState.ToString()*/);
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (zb.feeding || !playerInSight)
+            if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
                 return;
             }
 
             //Debug.Log("Entro en attack Collider, is Attacking = " + zb_attack.getisAttacking());
-            if (other.tag.Equals(TAG) && !playerInSight)
+            if (zs.Attack(other))
             {
-                zb.setisAttacking(true);
-                zb.setCurrentState(AIStates.Attack);
+                Debug.Log("ONTRIGGER ENTER ENTRO SEGUNDO IF DEBERÍA ATACAR");
+                zs.zb.setisAttacking(true);
+                zs.zb.setCurrentState(AIStates.Attack);
 
                 if (available)
                 {
-                    zb.setAgentParameters(0);
-                    zb.resetPersecutionPoint();
-                    zb.setAnimatorTriggerParameters("Attack_trigger");
+                    zs.zb.setAgentParameters(0,0);
+                    zs.zb.resetPersecutionPoint();
+                    zs.zb.setAnimatorTriggerParameters("Attack_trigger");
                     StartCoroutine(animationFinish());
                 }
                 
@@ -52,42 +56,54 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
-            if (zb.feeding || !playerInSight)
+            if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
+                //Debug.Log("SALGO");
                 return;
             }
 
-            if (other.tag.Equals("Player") && available)
+            float distance = Vector3.Distance(parent_transform.position, zs.target.transform.position);
+            Debug.Log("Distancia a OBJETIVO: " + distance);
+
+            if(distance < 1f)
             {
-                if(zb.animator.GetFloat("Speed") > 0.1f)
+                if (zs.zb.animator.GetFloat("Speed") > 0.1f)
                 {
-                    Debug.Log("VELOCIDAD A 0");
-                    zb.setAnimatorParameters("Speed", 0);
-                    
-                }                
-                zb.setAnimatorTriggerParameters("Attack_trigger");
+                    //Debug.Log("VELOCIDAD A 0");
+                    zs.zb.setAnimatorParameters("Speed", 0);
+                    zs.zb.setAgentParameters(0, 0);
+                }
+            }
+            else
+            {
+                zs.zb.setAgentParameters(zs.zb.getAgentSpeed(), zs.zb.getAgentRotationSpeed());
+                zs.zb.setAnimatorParameters("Speed", 1);
+            }
+
+            if (zs.Attack(other) && available)
+            {
+                //zs.zb.transform.rotation = Quaternion.Lerp(zs.zb.transform.rotation, zs.target.transform.rotation, 2 * Time.deltaTime);
+                //zs.zb.transform.LookAt(zs.target.transform);
+                zs.zb.setAnimatorTriggerParameters("Attack_trigger");
                 StartCoroutine(animationFinish());                         
             }
 
-            /*if (other.tag.Equals(TAG))
+            if (zs.target != null && zs.Attack(other))
             {
-                //OJO NOSE SI FUNCIONA MUY BIEN ESTO -----------REVISAR----------------
-                //Rotamos para golpear hacia el superviviente aunque nose si esto lo hace muy bien
-                parent_transform.Rotate(other.transform.eulerAngles);
-            }*/
-            
-            //parent_transform.LookAt(other.transform.position, Vector3.up);
+                zs.zb.transform.LookAt(zs.target.transform);
+                //zs.zb.transform.rotation = Quaternion.Lerp(zs.zb.transform.rotation, zs.target.transform.rotation, 5 * Time.deltaTime);
+            }
         }
 
         //Si salimos del collider attack volvemos al estado alerta
         private void OnTriggerExit(Collider other)
         {
-            if (zb.feeding || !playerInSight) return;
+            if (zs.zb.feeding) return;
 
-            if (other.tag.Equals(TAG))
+            if (zs.Attack(other))
             {
                 Debug.Log("OnTriggerExit de zombie_attack");
-                zb.backToAlert();
+                zs.zb.backToAlert();
             }               
         }
 
@@ -100,6 +116,5 @@ namespace comportamiento_personajes
             available = true;
             StopCoroutine(animationFinish());
         }
-
     }
 }

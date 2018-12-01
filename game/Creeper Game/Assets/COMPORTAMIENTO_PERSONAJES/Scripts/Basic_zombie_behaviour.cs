@@ -110,6 +110,14 @@ namespace comportamiento_personajes
         {
             return isDead;
         }
+        public float getAgentSpeed()
+        {
+            return AGENT_SPEED;
+        }
+        public float getAgentRotationSpeed()
+        {
+            return AGENT_ROTATIONSPEED;
+        }
         #endregion
 
         #region TakeDamage_state
@@ -216,7 +224,7 @@ namespace comportamiento_personajes
         public virtual void setNextRandomPoint()
         {            
             currentWayPoint++;
-            
+
             if (currentWayPoint.Equals(wayPoints.Count))
             {
                 currentWayPoint = 0;
@@ -377,7 +385,6 @@ namespace comportamiento_personajes
         /// </summary>
         public void backToPatrol()
         {
-            Debug.Log("BACK TO PATROL -------");
             setAnimatorParameters("Speed", 0);
             setCurrentState(AIStates.Patrol);
             setNextRandomPoint();
