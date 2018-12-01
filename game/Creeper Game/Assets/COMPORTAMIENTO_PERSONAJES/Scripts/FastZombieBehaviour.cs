@@ -228,7 +228,7 @@ public class FastZombieBehaviour : Zombie {
         else if (feeding && coroutinePatrolEnded)
         {
             hungry += hungry_time * 50;
-            Debug.Log("Hungry Level = " + hungry);
+           // Debug.Log("Hungry Level = " + hungry);
             if (hungry >= 90f && !currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
                 Debug.Log("ENTRO IF FEEDING UPDATE");
