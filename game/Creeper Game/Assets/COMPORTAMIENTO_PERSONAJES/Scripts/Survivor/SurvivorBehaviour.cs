@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using Assets.COMPORTAMIENTO_PERSONAJES.Constantes;
+using comportamiento_personajes;
 
 public class SurvivorBehaviour : Human {
 
@@ -52,6 +53,7 @@ public class SurvivorBehaviour : Human {
     private bool givingAmmo = false;
     private bool isAiming = false;
     private bool finishedAiming = false;
+    bool isShooting = false;
 
     // Use this for initialization
     void Start () {
@@ -105,16 +107,16 @@ public class SurvivorBehaviour : Human {
                     {
                         anim.SetBool("Aim", true);
                     }
-                    if (finishedAiming)
+                    if (finishedAiming && !isShooting)
                     {
-                        finishedAiming = false;
+                        isShooting = true;
                         print("Starting shooting corroutine");
                         StartCoroutine("Shoot");
                     }
                 }
                 else
                 {
-                    if (actualTarget.GetComponent<Human>().getIsDead())
+                    if (actualTarget.GetComponent<Zombie>().getIsDead())
                     {
                         print("Ha muerto");
                         distance = StandardConstants.SURVIVOR_DETECT_DIST;
@@ -125,6 +127,7 @@ public class SurvivorBehaviour : Human {
                     anim.SetBool("AimWalking", true);
                     agent.speed = StandardConstants.SURVIVOR_WALKING_SPEED;
                     Chase();
+                    isShooting = false;
                 }
 
                 break;
@@ -407,7 +410,7 @@ public class SurvivorBehaviour : Human {
         {
             if (goodness < 30)
             {
-                //setState(AIStates.Attack);
+                setState(AIStates.Attack);
             }
             else
             {
@@ -552,9 +555,9 @@ public class SurvivorBehaviour : Human {
         print(name + ": PUM");
         ResetAnimator();
         anim.SetTrigger("Shoot");
-        actualTarget.GetComponent<Human>().TakeDamage(25);
+        actualTarget.GetComponent<Zombie>().TakeDamage(25);
         yield return new WaitForSeconds(2.0f);
-        if (actualTarget.GetComponent<Human>().getIsDead())
+        if (actualTarget.GetComponent<Zombie>().getIsDead())
         {
             print("Ha muerto");
             setState(AIStates.Patrol);
