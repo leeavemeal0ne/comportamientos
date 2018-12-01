@@ -51,7 +51,7 @@ namespace comportamiento_personajes
             if (parent.currentState.Equals(AIStates.Alerted))
             {
                 float d = Vector3.Distance(target.transform.position, transform.position);
-                if (d < 2)
+                if (d < 3)
                 {
                     parent.currentState = AIStates.Attack;
                     lookingFor = false;
@@ -73,7 +73,7 @@ namespace comportamiento_personajes
             {
                 Vector3 direction = target.transform.position - transform.position;
                 float d = Vector3.Distance(target.transform.position, transform.position);
-                if (d < 1.5)
+                if (d < 3)
                 {
                     Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
                     parent.transform.rotation = Quaternion.RotateTowards(parent.transform.rotation, rotation, 20 * Time.deltaTime);
