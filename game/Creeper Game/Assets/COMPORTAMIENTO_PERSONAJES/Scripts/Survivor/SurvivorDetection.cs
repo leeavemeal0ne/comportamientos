@@ -32,6 +32,7 @@ public class SurvivorDetection : MonoBehaviour {
                         Debug.DrawRay(survivor.transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
                         if (survivor.zombieTags.Contains(hit.transform.tag) || survivor.survivorTags.Contains(hit.transform.tag))
                         {
+                            print("Llego");
                             float d = Vector3.Distance(collision.gameObject.transform.position, survivor.transform.position);
                             if (d < survivor.distance)
                             {
