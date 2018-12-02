@@ -57,7 +57,7 @@ namespace comportamiento_personajes
         private void OnTriggerStay(Collider other)
         {
             //si el collider que entra no es nuestro objetivo, el array de enemigos está a 0 porque no le vemos y demás no hacemos nada
-            Debug.Log("Hola");
+            //Debug.Log("Hola");
             if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
                 //Debug.Log("SALGO");

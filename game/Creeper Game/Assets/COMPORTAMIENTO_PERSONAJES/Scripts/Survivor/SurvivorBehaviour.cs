@@ -108,7 +108,7 @@ public class SurvivorBehaviour : Human {
                     Vector3 relPos = realObjectPos - transform.position;
                     Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
                     transform.rotation = rot;
-                    print("Finished Aiming " + finishedAiming);
+                    //print("Finished Aiming " + finishedAiming);
                     if (!isAiming)
                     {
                         isAiming = true;
@@ -343,7 +343,7 @@ public class SurvivorBehaviour : Human {
 
         Vector3 direction = actualTarget.transform.position - head.position;
 
-        print("ActualTargetRay: " + actualTarget);
+        //print("ActualTargetRay: " + actualTarget);
         Debug.DrawRay(head.position, direction, Color.red, -1);
         if (Physics.Raycast(head.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, head.position)*2, mask))
         {

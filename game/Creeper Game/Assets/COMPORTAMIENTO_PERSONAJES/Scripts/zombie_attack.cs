@@ -67,7 +67,7 @@ namespace comportamiento_personajes
             float distance = Vector3.Distance(parent_transform.position, zs.target.transform.position);
             Debug.Log("Distancia a OBJETIVO: " + distance);
 
-            if(distance < 2f)
+            if(distance < 0.5f)
             {
                 if (zs.zb.animator.GetFloat("Speed") > 0.1f)
                 {
