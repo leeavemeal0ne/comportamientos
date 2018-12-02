@@ -125,9 +125,6 @@ namespace comportamiento_personajes
                 EnemySight.Remove(other.gameObject);
             }
             chooseTarget();
-
-
-
         }
 
         /// <summary>

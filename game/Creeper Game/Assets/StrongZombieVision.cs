@@ -9,242 +9,165 @@ namespace comportamiento_personajes
 {
     public class StrongZombieVision : MonoBehaviour
     {
-        public string TAG = "Player";
-
-        //arreglar to esto 
-
-        //public NavMeshAgent agent;
-        [HideInInspector]
-        public StrongZombieBehaviour zb;
-        public float fieldOfViewAngle = 110f;
-        protected bool playerInSight;
-        private Vector3 personalLastSighting;
-        private Vector3? previousSighting;
-        private List<GameObject> players;
-
+      
         public GameObject target;
-        protected string target_name;
-        private List<GameObject> playerInCollider;
-        private List<GameObject> EnemySight;
+        public float distance = 100;
+        private bool alerted = false;
+        private bool lookingFor = false;
+        public bool throwing = false;
+        public bool thrown = false;
+        private List<string> zombieTags;
+        private List<string> survivorTags;
 
-        private float distance;
-        private float minDistance;
+        StrongZombieBehaviour parent;
 
-        private float waitSeconds;
-
-        private SphereCollider col;
-
-        #region getters/setters
-        public List<GameObject> getPlayers() { return players; }
-        public StrongZombieBehaviour GetStrongZombieBehaviour() { return zb; }
-        public string getTAG() { return TAG; }
-        public bool Attack(Collider other)
+        private void setAlertedPoint()
         {
-            bool temp = other.gameObject.name.Equals(target_name);
-            return temp;
+            parent.ResetAllPatrolTasks();
+            parent.setAnimatorParameters("Speed", 0.5f);
+            parent.setAgentParameters(0.5f, 20);
+            lookingFor = true;
         }
-        public int getEnemySightCount() { return EnemySight.Count; }
-        public StrongZombieVision GetInstance() { return this; }
-        #endregion
+        private void Throw()
+        {
+            //parent.StopAllPatrolTasks();
+            parent.throwableObject.transform.position = parent.rightHand.transform.position;
+            parent.throwableObject.transform.parent = parent.rightHand.transform;
+            
 
+        }
         // Use this for initialization
         void Start()
         {
-            //no objetivo
-            target = null;
-            //Distancia al objetivo
-            distance = 100;
-            minDistance = 3;
-            //Buscamos todos los gameObjects con tag Player
-            players = new List<GameObject>(5);
-            players = GameObject.FindGameObjectsWithTag(TAG).ToList();
-            Debug.Log("Numero de players en lista: " + players.Count);
-            col = GetComponent<SphereCollider>();
-            //player o superviviente es visible
-            playerInSight = false;
-            //tiempo que le damos por si vuelve a entrar en el collider el superviviente
-            waitSeconds = 0.5f;
-            zb = GetComponentInParent<StrongZombieBehaviour>();
-            playerInCollider = new List<GameObject>(20);
-            EnemySight = new List<GameObject>(20);
-
-            target_name = "";
+            zombieTags = new List<string>(new string[] { Tags.NORMAL_ZOMBIE });
+            survivorTags = new List<string>(new string[] { Tags.SURVIVOR, Tags.PLAYER, "Visual_survivor" });
+            parent = GetComponentInParent<StrongZombieBehaviour>();
         }
 
-        /*
-        private void OnTriggerEnter(Collider other)
+        // Update is called once per frame
+        void FixedUpdate()
         {
-            //Si la lista no contiene al objeto que entra sale
-            if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
+            Debug.Log("Hay throwable object: " + parent.isThereThrowableObject());
+           
+            if (parent.currentState.Equals(AIStates.Alerted) && parent.isThereThrowableObject() && !thrown)
             {
-                return;
-            }
-            else
-            {
-                //cambiamos el estado 
-                if (canSeeEnemy(other))
+                float d = Vector3.Distance(target.transform.position, transform.position);
+                if (d < 15)
                 {
-                    if (zb.currentState == AIStates.Patrol)
-                    {
-                        zb.setCurrentState(AIStates.Alerted);
-                    }
+                    parent.currentState = AIStates.Throw;
+                    Debug.Log("Tirando objeto");
+                    thrown = true;
                 }
+             
             }
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-
-            //Si esta comiendo no hace nada o si está atacando
-            if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
+            /*
+            else if (parent.currentState.Equals(AIStates.Attack))
             {
-                return;
-            }
-
-            //primero vemos si puedo ver al enemigo y después elegimos el objetivo si hay
-            canSeeEnemy(other);
-            chooseTarget();
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (zb.feeding) return;
-
-            //cuando sale de nuestra área de influencia borramos del array y actualizamos nuestro estado
-            if (EnemySight.Contains(other.gameObject))
-            {
-                Debug.Log("Borro el enemigo a la salida");
-                EnemySight.Remove(other.gameObject);
-            }
-            chooseTarget();
-
-
-
-        }
-        */ 
-        /// <summary>
-        /// Elige el objetivo, tenemos una lista de enemigos a la vista, si no está a la vista no hacemos nada y volvemos a
-        /// modo patrulla
-        /// </summary>
-        private void chooseTarget()
-        {
-            //Si no hay enemigos a la vista volvemos a patrol
-            if (EnemySight.Count <= 0)
-            {
-                /*
-                if (zb.currentState == AIStates.Alerted)
+                Vector3 direction = target.transform.position - transform.position;
+                float d = Vector3.Distance(target.transform.position, transform.position);
+                if (d < 3)
                 {
-                    Debug.Log("BACK TO PATROL");
+                    Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
+                    parent.transform.rotation = Quaternion.RotateTowards(parent.transform.rotation, rotation, 20 * Time.deltaTime);
+                }
+                else
+                {
                     distance = 100;
-                    target = null;
-                    zb.backToPatrol();
-                }
-                */
-            }
-            //si solo hay un objetivo le elegimos
-            else if (EnemySight.Count == 1)
-            {
-                //Debug.Log("ENEMY SIGHT = 1, tag = " + EnemySight[0].name);
-                target = EnemySight[0];
-                distance = Vector3.Distance(target.transform.position, this.transform.position);
-            }
-            //calculamos cuál está mas cerca
-            else
-            {
-                //Debug.Log("ENEMY SIGHT = " + EnemySight.Count);
-                foreach (GameObject g in EnemySight)
-                {
-                    //Si la distancia al objetivo es menor a 3 no calculamos nada nos quedamos con el target que tengamos
-                    if (distance < 3)
-                    {
-                        Debug.Log("Distance < 2");
-                        if (g.Equals(target))
-                        {
-                            //Debug.Log("Me quedo con mi target = " + g.name);
-                            target = g;
-                            distance = Vector3.Distance(target.transform.position, this.transform.position);
-                        }
-                    }
-                    else
-                    {
-                        //Elegimos el de menor distancia
-                        float dis = Vector3.Distance(g.transform.position, this.transform.position);
-                        if (dis < distance)
-                        {
-                            //Debug.Log("Cambio target = " + g.name);
-                            target = g;
-                            distance = dis;
-                        }
-                    }
+                    parent.currentState = AIStates.Alerted;
+                    throwing = false;
                 }
             }
-            //actualizamos posiciones y destino del navmeshAgent
-            if (target != null)
-            {
-                target_name = target.name;
-                //Debug.Log("Target seleccionado = " + target.name);
-                //zb.transform.rotation = Quaternion.Lerp(zb.transform.rotation, target.transform.rotation, 5 * Time.deltaTime);
-                zb.agent.SetDestination(target.transform.position);
-            }
+            */
+            checkStateBehaviour();
         }
 
-        /// <summary>
-        /// Calcula si vemos al personaje con un angulo prefijado si está dentro de ese ángulo el superviviente
-        /// y no hay nada entre el y el zombie le perseguimos
-        /// sino no hacemos nada
-        /// </summary>
-        /// <param name="other"></param>
-        private bool canSeeEnemy(Collider other)
+        void OnTriggerStay(Collider collision)
         {
-            bool canSee = false;
+            //Check for a match with the specified name on any GameObject that collides with your GameObject
+            bool esZombi = zombieTags.Contains(collision.gameObject.tag);
+            bool esSuperviviente = survivorTags.Contains(collision.gameObject.tag);
 
-            if (players.Contains(other.gameObject))
+            //Comprobamos si el objeto dentro de nuestro radio de vista es <ombi o superviviente
+            if (esZombi || esSuperviviente)
             {
-                Vector3 direction = other.transform.position - zb.transform.position;
+                
+                Vector3 direction = collision.gameObject.transform.position - transform.position;
                 float angle = Vector3.Angle(direction, transform.forward);
-
-                Debug.DrawRay(zb.transform.position, transform.forward, Color.green);
-
-                if (angle < fieldOfViewAngle * 0.5f)
+                //Si se encuentra en el angulo de vista
+                if (angle < 45.0f)
                 {
                     RaycastHit hit;
-
-                    Debug.DrawRay(transform.position, direction, Color.black);
-                    bool colliderHit = Physics.Raycast(transform.position, direction.normalized, out hit, col.radius);
-
-                    if (colliderHit && hit.collider.gameObject.tag.Equals(TAG))
+                    //Lanzamos un rayo hacia el target con el tamaño del radio de nuesta zona de vista
+                    if (Physics.Raycast(transform.position, direction, out hit, Vector3.Distance(collision.gameObject.transform.position, transform.position), 17))
                     {
-                        canSee = true;
-                        if (!EnemySight.Contains(other.gameObject))
+                        //Comprobamos que no hay objetos entre medias que nos impida ver el target
+                        if (hit.transform.tag == collision.gameObject.tag)
                         {
-                            //Debug.Log("AÑADO ENEMIGO GameObject ENEMYSIGHT");
-                            EnemySight.Add(other.gameObject);
+                            float d = Vector3.Distance(collision.gameObject.transform.position, transform.position);
+                            if (target == null && (esSuperviviente || esZombi))
+                            {
+                                Debug.Log("Detectado zombie, cambia a alerted");
+                                target = hit.transform.gameObject;
+                                distance = d;
+                                parent.currentState = AIStates.Alerted;
+                            }
+                            //Si el anterior target era zombi y ahora es superviviente, vamos directos a por el superviviente
+                            else if ((esSuperviviente && zombieTags.Contains(target.tag)))
+                            {
+                                Debug.Log("Detectado zombie, cambia a alerted");
+                                target = hit.transform.gameObject;
+                                distance = d;
+                                parent.currentState = AIStates.Alerted;
+                            }
+                            // Si el anterior target era del mismo tipo que el anterior, comprobamos cual está más cerca
+                            else if (esSuperviviente && survivorTags.Contains(target.tag) || esZombi && zombieTags.Contains(target.tag))
+                            {
+                                if (d < distance)
+                                {
+                                    Debug.Log("Detectado zombie, cambia a alerted");
+                                    target = hit.transform.gameObject;
+                                    distance = d;
+                                    parent.currentState = AIStates.Alerted;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * 1000, Color.white);
+                            //Debug.Log("Did not Hit");
                         }
                     }
-                    else
-                    {
-                        //Debug.Log("Borrado GameObject ENEMYSIGHT");
-                        EnemySight.Remove(other.gameObject);
-                    }
-                    direction = Quaternion.Euler(0, -40, 0) * direction;
-                    Debug.DrawRay(transform.position, direction, Color.blue);
-                    direction = Quaternion.Euler(0, 80, 0) * direction;
-                    Debug.DrawRay(transform.position, direction, Color.blue);
-                    Debug.DrawLine(transform.position, hit.point, Color.red);
+
+                }
+
+                //Check for a match with the specific tag on any GameObject that collides with your GameObject
+                if (collision.gameObject.tag == "MyGameObjectTag")
+                {
+                    //If the GameObject has the same tag as specified, output this message in the console
+                    Debug.Log("Do something else here");
                 }
             }
-
-            return canSee;
         }
 
-        private IEnumerator wait()
+        private void checkStateBehaviour()
         {
-            yield return new WaitForSeconds(waitSeconds);
-            playerInSight = false;
-            //zb.backToPatrol();
-
-            //currentState = AIStateType.Patrol;
-            StopAllCoroutines();
+            switch (parent.currentState)
+            {
+                case AIStates.Alerted:
+                    if (!lookingFor)
+                    {
+                        //setAlertedPoint();
+                    }
+                    break;
+                case AIStates.Throw:
+                    if (!throwing)
+                    {
+                        Throw();
+                        
+                    }
+                    break;
+            }
         }
+        
     }
 }
