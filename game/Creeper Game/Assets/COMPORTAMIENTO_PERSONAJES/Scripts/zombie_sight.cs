@@ -66,7 +66,7 @@ namespace comportamiento_personajes
                 temp = GameObject.FindGameObjectsWithTag(t).ToList();
                 players.AddRange(temp);
             }
-            players = GameObject.FindGameObjectsWithTag(TAG).ToList();
+            //players = GameObject.FindGameObjectsWithTag(TAG).ToList();
             Debug.Log("Numero de players en lista: " + players.Count);
             col = GetComponent<SphereCollider>();
             //player o superviviente es visible
