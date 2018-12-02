@@ -92,7 +92,7 @@ public class SurvivorBehaviour : Human {
 
     private void CheckStateBehaviour()
     {
-        //print("State: " + currentState);
+        print(name + " State: " + currentState + " target: " + actualTarget);
         //print("Target: " + actualTarget.name);
         switch (currentState)
         {
@@ -274,6 +274,8 @@ public class SurvivorBehaviour : Human {
                     }
                     break;
                 case AIStates.Steal:
+                    ResetAnimator();
+                    print("Stealing to: " + actualTarget.name);
                     givingAmmo = false;
                     StopAllCoroutines();
                     if (actualTarget.GetComponent<Human>().getAmmo() <= 0)

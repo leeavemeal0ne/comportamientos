@@ -42,7 +42,7 @@ public class SurvivorDetection : MonoBehaviour
                         {
                             wall = true;
                         }
-                        if (!wall && (survivor.zombieTags.Contains(allHits[i].transform.tag) || survivor.survivorTags.Contains(allHits[i].transform.tag)))
+                        if (!wall && (survivor.zombieTags.Contains(allHits[i].transform.tag) || survivor.survivorTags.Contains(allHits[i].transform.tag))  && allHits[i].transform.name != survivor.name)
                         {
                             hit = allHits[i];
                             print("Llego");

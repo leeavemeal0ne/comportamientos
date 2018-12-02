@@ -52,7 +52,8 @@ public class Human : Zombie {
             StartCoroutine("GetShot");
         }
 
-        healthText.text = "Health: " + health + "/" + StandardConstants.MAX_HEALTH;
+        if(healthText != null)
+            healthText.text = "Health: " + health + "/" + StandardConstants.MAX_HEALTH;
     }
 
     public override void notifyDead()
