@@ -11,7 +11,7 @@ public class StrongZombieBehaviour : MonoBehaviour
     //Coroutine ended
     private bool coroutinePatrolEnded;
 
-    private AIStateType currentState = AIStateType.Patrol;
+    public AIStateType currentState = AIStateType.Patrol;
 
     //Suffle de los waypoints así cada zombie tiene un path distinto
     private WayPoint_Manager wp = null;
@@ -44,7 +44,7 @@ public class StrongZombieBehaviour : MonoBehaviour
     public float hungry = 15;
     private float hungry_time = 0.005f;
     private float min_hungry = 0.1f;
-    private bool feeding = false;
+    public bool feeding = false;
     private bool seeking_food = false;
 
 
@@ -243,7 +243,9 @@ public class StrongZombieBehaviour : MonoBehaviour
         throwableObject.transform.parent = null;
         //Rigidbody r = throwableObject.gameObject.GetComponent<Rigidbody>();
         //r.useGravity = true;
-        targetPosition = new Vector3(100, 100, 100);
+
+        //esto no va todavía
+        targetPosition = GetComponentInChildren<StrongZombieVision>().target.transform.position;
         throwableObject.GetComponent<Throwable>().setForce(throwableObject.transform.position, targetPosition, projectileAngle);
         throwableObject.GetComponent<Throwable>().updatePhysics();
 
@@ -353,8 +355,16 @@ public class StrongZombieBehaviour : MonoBehaviour
 
     }
 
-   
+
     #endregion
 
+    public void backToPatrol()
+    {
+        /*
+        setAnimatorParameters("Speed", 0);
+        setCurrentState(AIStates.Patrol);
+        setNextRandomPoint();
+        */ 
+    }
 }
 
