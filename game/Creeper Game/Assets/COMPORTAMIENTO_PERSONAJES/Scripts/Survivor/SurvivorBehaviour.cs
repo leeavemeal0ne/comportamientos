@@ -17,6 +17,8 @@ public class SurvivorBehaviour : Human {
     private NavMeshAgent agent;
     /* VARIABLES PARA EL NAVMESH*/
     public GameObject WayPointList;
+    public List<GameObject> allWaypointList;
+
     private List<Transform> waypoints;
     private int actualWayPoint = 0;
 
@@ -78,7 +80,12 @@ public class SurvivorBehaviour : Human {
     }
 	
 	// Update is called once per frame
-	void Update () {             
+	void Update () {
+        if (getIsDead())
+        {
+            StopAllCoroutines();
+            return;
+        }
 
         CheckStateBehaviour();
 	}
@@ -101,7 +108,7 @@ public class SurvivorBehaviour : Human {
                     Vector3 relPos = realObjectPos - transform.position;
                     Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
                     transform.rotation = rot;
-                    print("Finished Aiming " + finishedAiming);
+                    //print("Finished Aiming " + finishedAiming);
                     if (!isAiming)
                     {
                         isAiming = true;
@@ -147,6 +154,7 @@ public class SurvivorBehaviour : Human {
                 {
                     print("He terminado de huir");
                     setState(AIStates.Rest);
+                    StartCoroutine("StopRunaway");
                 }
 
                 break;
@@ -300,10 +308,11 @@ public class SurvivorBehaviour : Human {
 
     private void Patrol()
     {
-        if(agent.destination != waypoints[actualWayPoint].position)
-        {
-            agent.SetDestination(waypoints[actualWayPoint].position);
-        }
+        NavMeshPath path = new NavMeshPath();
+        agent.CalculatePath(waypoints[actualWayPoint].position, path);
+        agent.SetPath(path);
+        //agent.SetDestination(waypoints[actualWayPoint].position);
+
 
         if (CheckPoint())
         {
@@ -332,13 +341,21 @@ public class SurvivorBehaviour : Human {
 
         RaycastHit hit;
 
+        RaycastHit[] hits;
+
         Vector3 direction = actualTarget.transform.position - head.position;
 
-        print("ActualTargetRay: " + actualTarget);
+        //print("ActualTargetRay: " + actualTarget);
         Debug.DrawRay(head.position, direction, Color.red, -1);
-        if (Physics.Raycast(head.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, head.position)*2, mask))
+        bool wall = false;
+        hits = Physics.RaycastAll(head.position, direction, Vector3.Distance(actualTarget.transform.position, head.position));
+        for(int i = 0; i<hits.Length; i++)
         {
-            if (hit.transform.gameObject == actualTarget)
+            if(hits[i].transform.tag == Tags.WALL)
+            {
+                wall = true;
+            }
+            if(!wall && hits[i].transform.gameObject == actualTarget)
             {
                 isInLine = true;
             }
@@ -346,12 +363,6 @@ public class SurvivorBehaviour : Human {
         if (Vector3.Distance(actualTarget.transform.position, transform.position)<=1)
         {
             isInLine = true;
-        }
-
-        if (!isInLine)
-        {
-            //print("Collider: " +hit.transform.name);
-            //print("Distance:" + Vector3.Distance(actualTarget.transform.position, transform.position));
         }
 
         return isInLine;
@@ -407,7 +418,11 @@ public class SurvivorBehaviour : Human {
     public void DetectHuman(GameObject human)
     {
 
-        human.GetComponent<SurvivorBehaviour>().ReceiveContact(this.gameObject);
+        SurvivorBehaviour surv = human.GetComponent<SurvivorBehaviour>();
+        if (surv != null)
+        {
+            human.GetComponent<SurvivorBehaviour>().ReceiveContact(this.gameObject);
+        }
         if (goodness > 50)
         {
             if (human.GetComponent<Human>().isWounded())
@@ -607,6 +622,31 @@ public class SurvivorBehaviour : Human {
         {
             print("no ha muerto");
         }
+        yield return null;
+    }
+
+    IEnumerator StopRunaway()
+    {
+        bool found = false;
+        while (!found)
+        {
+            int index = Random.Range(0, allWaypointList.Count - 1);
+            GameObject points = allWaypointList[index];
+            if (points != WayPointList)
+            {
+                WayPointList = points;
+                actualWayPoint = 0;
+                found = true;
+                waypoints = new List<Transform>();
+                foreach(Transform t in WayPointList.transform)
+                {
+                    waypoints.Add(t);
+                }
+
+            }
+        }
+        yield return new WaitForSeconds(5.0f);
+        setState(AIStates.Patrol);
         yield return null;
     }
 }

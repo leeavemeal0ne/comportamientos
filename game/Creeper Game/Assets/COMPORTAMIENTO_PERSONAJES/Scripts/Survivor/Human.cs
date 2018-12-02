@@ -19,6 +19,8 @@ public class Human : Zombie {
 
     // Use this for initialization
     protected void Start () {
+        gameObject.tag = Tags.SURVIVOR;
+
         anim = GetComponent<Animator>();
         if (startIdle)
         {
@@ -88,7 +90,10 @@ public class Human : Zombie {
 
     public void setAmmoText()
     {
-        ammoText.text = "Ammo: " + ammo; 
+        if (ammoText != null)
+        {
+            ammoText.text = "Ammo: " + ammo;
+        }
     }
 
     public int getAmmo()
@@ -118,17 +123,19 @@ public class Human : Zombie {
 
     IEnumerator Die()
     {
-        yield return new WaitForSeconds(1.0f);
+        //yield return new WaitForSeconds(1.0f);
         anim.SetTrigger("Die");
-
+        //GetComponent<Rigidbody>().useGravity = false;
         Collider[] c = GetComponentsInChildren<Collider>();
         Destroy(GetComponent<NavMeshAgent>());
+        //Destroy(this);
+        Destroy(GetComponent<Rigidbody>());
         foreach(Collider col in c)
         {
             Destroy(col);
         }
 
-        GetComponent<Rigidbody>().useGravity = false;
+        yield return null;
     }
 
 

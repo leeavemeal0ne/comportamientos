@@ -70,7 +70,7 @@ namespace comportamiento_personajes
         // Use this for initialization
         public void Start()
         {
-            //StopAllCoroutines();
+            gameObject.tag = Tags.NORMAL_ZOMBIE;
 
             life = 100;
 
@@ -133,7 +133,7 @@ namespace comportamiento_personajes
             if(life <= 0 && !isDead)
             {
                 isDead = true;
-                gameObject.tag = "Dead";
+                gameObject.tag = Tags.DEATH_ZOMBIE;
                 setAnimatorTriggerParameters("Dead_trigger");
                 ZombieIsDead();               
             }
@@ -166,11 +166,20 @@ namespace comportamiento_personajes
             {
                 StopCoroutine(wa);
             }
+            currentState = AIStates.Dead;
+            setAgentParameters(0, 0);
+            agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-            setAgentParameters(0, 0);
-            agent.ResetPath();            
             this.enabled = false;
+            Collider[] c = GetComponentsInChildren<Collider>();
+            Destroy(GetComponent<NavMeshAgent>());
+            foreach (Collider col in c)
+            {
+                Destroy(col);
+            }
+
+            GetComponent<Rigidbody>().useGravity = false;           
         }
         #endregion
 
@@ -259,6 +268,11 @@ namespace comportamiento_personajes
         // Update is called once per frame
         public void FixedUpdate()
         {
+            if(currentState == AIStates.Dead)
+            {
+                return;
+            }
+
             //Si no está en alerta o attaque accede aquí así restamos si tiene hambre
             if(!currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
             {
