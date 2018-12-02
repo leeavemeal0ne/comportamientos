@@ -57,7 +57,15 @@ namespace comportamiento_personajes
             //Distancia al objetivo
             distance = 100;
             minDistance = 3;
-           
+
+            //Buscamos todos los gameObjects con tag Player
+            players = new List<GameObject>(20);
+            List<GameObject> temp = new List<GameObject>(10);
+            foreach (string t in TagList)
+            {
+                temp = GameObject.FindGameObjectsWithTag(t).ToList();
+                players.AddRange(temp);
+            }
             col = GetComponent<SphereCollider>();
             //player o superviviente es visible
             playerInSight = false;
@@ -67,38 +75,51 @@ namespace comportamiento_personajes
             playerInCollider = new List<GameObject>(20);
             EnemySight = new List<GameObject>(20);
 
-            getPlayersInScene();
             Debug.Log("Numero de players en lista: " + players.Count);
 
             target_name = "";
         }
 
-        private void getPlayersInScene()
+        public void notifyAllPlayers()
         {
+            foreach (GameObject g in players)
+            {
+                g.GetComponent<Zombie>().notifyDead();
+            }
+        }
+
+        public void getPlayersInScene()
+        {
+            Debug.Log("Numero de Objetos ANTES en el array = " + players.Count);
             //Buscamos todos los gameObjects con tag Player
             players = new List<GameObject>(20);
             List<GameObject> temp = new List<GameObject>(10);
             foreach (string t in TagList)
             {
                 temp = GameObject.FindGameObjectsWithTag(t).ToList();
-                players.AddRange(temp);
+                foreach (GameObject g in temp)
+                {
+                    if (!g.GetComponent<Zombie>().getIsDead())
+                    {
+                        players.Add(g);
+                        Debug.Log("NOMBRE GAMEOBJECT = " + g.name);
+                    }
+                }
+                //players.AddRange(temp);
                 temp.Clear();
             }
 
-            if(zb.currentState == AIStates.Alerted || zb.currentState == AIStates.Attack)
-            {
-                zb.backToPatrol();
-            }
+            Debug.Log("-------------------------------------------------Esta en ESCENA Y ACTUALIZO LOS PLAYERS VIVOS");
+            Debug.Log("Numero de Objetos en el array = " + players.Count);
+
+            EnemySight.Clear();
+            target_name = "";
+
+            zb.backToAlert();
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (TagList.Contains(other.gameObject.tag) &&  other.GetComponent<Human>().getIsDead())
-            {
-                Debug.Log("Esta en ESCENA Y ACTUALIZO LOS PLAYERS VIVOS");
-                getPlayersInScene();
-            }
-
             //Si la lista no contiene al objeto que entra sale
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
@@ -119,16 +140,11 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
-            if(other.gameObject.tag == Tags.SURVIVOR)
-            {
-                Debug.Log("ONTRIGGERSTAY -------------------------------- " + other.gameObject.name);
-            }
-
-            if (TagList.Contains(other.gameObject.tag) && other.GetComponent<Human>().getIsDead())
+            if (target != null && target.GetComponentInParent<Zombie>().getIsDead())
             {
                 getPlayersInScene();
             }
-            
+
             //Si esta comiendo no hace nada o si está atacando
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {

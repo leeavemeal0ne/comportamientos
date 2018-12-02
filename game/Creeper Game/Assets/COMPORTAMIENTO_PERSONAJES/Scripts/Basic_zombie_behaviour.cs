@@ -120,7 +120,7 @@ namespace comportamiento_personajes
         }
         #endregion
 
-        #region TakeDamage_state
+        #region TakeDamage_state && notify Dead
         /// <summary>
         /// Cuando golpean al zombie le resta vida
         /// </summary>
@@ -139,16 +139,6 @@ namespace comportamiento_personajes
             }
             else
             {
-                /*if (co != null)
-                {
-                    StopCoroutine(co);
-                }
-                if(wa != null)
-                {
-                    StopCoroutine(wa);
-                }*/
-                //activar animación de daño
-                //StopAllCoroutines();
                 setAnimatorTriggerParameters("Pain_trigger");
             }
         }
@@ -171,7 +161,7 @@ namespace comportamiento_personajes
             agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-            this.enabled = false;
+            //this.enabled = false;
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
@@ -179,7 +169,13 @@ namespace comportamiento_personajes
                 Destroy(col);
             }
 
-            GetComponent<Rigidbody>().useGravity = false;           
+            GetComponent<Rigidbody>().isKinematic = true;           
+        }
+
+        public override void notifyDead()
+        {
+                Debug.Log("DEBO ACTUALIZAR TODOS LOS JUGADORES");
+                this.GetComponentInChildren<zombie_sight>().getPlayersInScene();
         }
         #endregion
 
@@ -504,6 +500,7 @@ namespace comportamiento_personajes
             seeking_food = false;
             agent.ResetPath();
         }
+      
         #endregion
 
     }

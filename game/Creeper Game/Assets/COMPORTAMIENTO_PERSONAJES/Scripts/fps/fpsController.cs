@@ -118,7 +118,7 @@ public class fpsController : Human {
             bool hitObject = Physics.Raycast(weapon.position, weapon.forward, out hit,20, layerMask, QueryTriggerInteraction.Ignore);
             if (hitObject)
             {
-                Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
+                //Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
                 if (hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE || hit.collider.gameObject.tag == Tags.FAST_ZOMBIE 
                     || hit.collider.gameObject.tag == Tags.SURVIVOR)
                 {
@@ -177,7 +177,6 @@ public class fpsController : Human {
     {
         if (!playerIsDead)
         {
-            Debug.Log("Me hacen pupita--------");
             health -= dmg;
             if (health <= 0)
             {

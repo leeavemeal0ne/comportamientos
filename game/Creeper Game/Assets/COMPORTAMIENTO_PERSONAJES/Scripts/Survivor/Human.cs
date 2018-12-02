@@ -55,6 +55,11 @@ public class Human : Zombie {
         healthText.text = "Health: " + health + "/" + StandardConstants.MAX_HEALTH;
     }
 
+    public override void notifyDead()
+    {
+        //throw new System.NotImplementedException();
+    }
+
     public override bool getIsDead()
     {
         return health <= 0;

@@ -207,9 +207,20 @@ public class FastZombieBehaviour : Zombie {
         setAnimatorParameters("Speed", 1);
         setAgentParameters(2, 120);
     }
+    public override void notifyDead()
+    {
+        if (isDead)
+        {
+            GetComponentInChildren<Fast_zombie_sight>().notifyAllPlayers();
+        }
+        else
+        {
+            GetComponentInChildren<Fast_zombie_sight>().getPlayersInScene();
+        }
+    }
     #endregion
 
-    
+
 
 
     // Update is called once per frame

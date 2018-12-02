@@ -138,16 +138,6 @@ namespace comportamiento_personajes
             }
             else
             {
-                /*if (co != null)
-                {
-                    StopCoroutine(co);
-                }
-                if(wa != null)
-                {
-                    StopCoroutine(wa);
-                }*/
-                //activar animación de daño
-                //StopAllCoroutines();
                 setAnimatorTriggerParameters("Pain_trigger");
             }
         }
@@ -170,7 +160,7 @@ namespace comportamiento_personajes
             agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-            this.enabled = false;
+            //this.enabled = false;
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
@@ -178,7 +168,15 @@ namespace comportamiento_personajes
                 Destroy(col);
             }
 
-            GetComponent<Rigidbody>().useGravity = false;           
+            GetComponent<Rigidbody>().useGravity = false;
+            GetComponent<Rigidbody>().isKinematic = true;
+
+        }
+
+        public override void notifyDead()
+        {
+            Debug.Log("DEBO ACTUALIZAR TODOS LOS JUGADORES");
+            this.GetComponentInChildren<Fast_zombie_sight>().getPlayersInScene();
         }
         #endregion
 

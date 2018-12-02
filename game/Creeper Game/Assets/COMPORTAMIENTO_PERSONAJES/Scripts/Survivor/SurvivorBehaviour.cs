@@ -92,7 +92,7 @@ public class SurvivorBehaviour : Human {
 
     private void CheckStateBehaviour()
     {
-        print("State: " + currentState);
+        //print("State: " + currentState);
         //print("Target: " + actualTarget.name);
         switch (currentState)
         {
