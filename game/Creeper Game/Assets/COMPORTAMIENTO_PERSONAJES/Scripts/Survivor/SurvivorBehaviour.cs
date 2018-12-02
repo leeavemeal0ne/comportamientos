@@ -407,7 +407,11 @@ public class SurvivorBehaviour : Human {
     public void DetectHuman(GameObject human)
     {
 
-        human.GetComponent<SurvivorBehaviour>().ReceiveContact(this.gameObject);
+        SurvivorBehaviour surv = human.GetComponent<SurvivorBehaviour>();
+        if (surv != null)
+        {
+            human.GetComponent<SurvivorBehaviour>().ReceiveContact(this.gameObject);
+        }
         if (goodness > 50)
         {
             if (human.GetComponent<Human>().isWounded())
