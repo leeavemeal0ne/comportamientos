@@ -19,6 +19,8 @@ public class Human : Zombie {
 
     // Use this for initialization
     protected void Start () {
+        gameObject.tag = Tags.SURVIVOR;
+
         anim = GetComponent<Animator>();
         if (startIdle)
         {

@@ -55,6 +55,8 @@ public class FastZombieBehaviour : Zombie {
     {
         StopAllCoroutines();
 
+        gameObject.tag = Tags.FAST_ZOMBIE;
+
         isDead = false;
 
         coroutinePatrolEnded = true;
