@@ -26,7 +26,6 @@ namespace comportamiento_personajes
             available = true;
             //transform del padre
             parent_transform = GetComponentInParent<Transform>();
-            Debug.Log("TAG = " + zs.TAG  /*+ " ZB = " + zb_attack.currentState.ToString()*/);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -48,6 +47,7 @@ namespace comportamiento_personajes
                     zs.zb.setAgentParameters(0,0);
                     zs.zb.resetPersecutionPoint();
                     zs.zb.setAnimatorTriggerParameters("Attack_trigger");
+                    other.gameObject.GetComponentInParent<Zombie>().TakeDamage(10);
                     StartCoroutine(animationFinish());
                 }
                 
@@ -67,7 +67,7 @@ namespace comportamiento_personajes
             float distance = Vector3.Distance(parent_transform.position, zs.target.transform.position);
             Debug.Log("Distancia a OBJETIVO: " + distance);
 
-            if(distance < 1f)
+            if(distance < 2f)
             {
                 if (zs.zb.animator.GetFloat("Speed") > 0.1f)
                 {
@@ -88,6 +88,7 @@ namespace comportamiento_personajes
             {
                 //activamos animación de atacar y esperamos hasta que termine
                 zs.zb.setAnimatorTriggerParameters("Attack_trigger");
+                other.gameObject.GetComponentInParent<Zombie>().TakeDamage(10);
                 StartCoroutine(animationFinish());                         
             }
 
