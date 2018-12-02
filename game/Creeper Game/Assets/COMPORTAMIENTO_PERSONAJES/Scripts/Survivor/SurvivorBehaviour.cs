@@ -341,13 +341,21 @@ public class SurvivorBehaviour : Human {
 
         RaycastHit hit;
 
+        RaycastHit[] hits;
+
         Vector3 direction = actualTarget.transform.position - head.position;
 
         print("ActualTargetRay: " + actualTarget);
         Debug.DrawRay(head.position, direction, Color.red, -1);
-        if (Physics.Raycast(head.position, direction, out hit, Vector3.Distance(actualTarget.transform.position, head.position)*2, mask))
+        bool wall = false;
+        hits = Physics.RaycastAll(head.position, direction, Vector3.Distance(actualTarget.transform.position, head.position));
+        for(int i = 0; i<hits.Length; i++)
         {
-            if (hit.transform.gameObject == actualTarget)
+            if(hits[i].transform.tag == Tags.WALL)
+            {
+                wall = true;
+            }
+            if(!wall && hits[i].transform.gameObject == actualTarget)
             {
                 isInLine = true;
             }
@@ -355,12 +363,6 @@ public class SurvivorBehaviour : Human {
         if (Vector3.Distance(actualTarget.transform.position, transform.position)<=1)
         {
             isInLine = true;
-        }
-
-        if (!isInLine)
-        {
-            //print("Collider: " +hit.transform.name);
-            //print("Distance:" + Vector3.Distance(actualTarget.transform.position, transform.position));
         }
 
         return isInLine;
