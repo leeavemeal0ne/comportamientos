@@ -90,7 +90,10 @@ public class Human : Zombie {
 
     public void setAmmoText()
     {
-        ammoText.text = "Ammo: " + ammo; 
+        if (ammoText != null)
+        {
+            ammoText.text = "Ammo: " + ammo;
+        }
     }
 
     public int getAmmo()
