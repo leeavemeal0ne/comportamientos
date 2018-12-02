@@ -80,16 +80,6 @@ namespace comportamiento_personajes
             target_name = "";
         }
 
-        public void notifyAllPlayers()
-        {
-            Debug.Log("NOTIFICO A TODOS LOS JUGADORES");
-            foreach (GameObject g in players)
-            {
-                Debug.Log("NOTIFICO A " + g.name);
-                g.GetComponent<Zombie>().notifyDead();
-            }
-        }
-
         public void getPlayersInScene()
         {
             Debug.Log("Numero de Objetos ANTES en el array = " + players.Count);
@@ -125,7 +115,7 @@ namespace comportamiento_personajes
             //Si la lista no contiene al objeto que entra sale
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
-                Debug.Log("ENTRO EN RETURN");
+                //Debug.Log("ENTRO EN RETURN");
                 return;
             }
             else
@@ -174,7 +164,7 @@ namespace comportamiento_personajes
             //cuando sale de nuestra área de influencia borramos del array y actualizamos nuestro estado
             if (EnemySight.Contains(other.gameObject))
             {
-                Debug.Log("Borro el enemigo a la salida");
+                //Debug.Log("Borro el enemigo a la salida");
                 EnemySight.Remove(other.gameObject);
             }
             chooseTarget();
@@ -237,7 +227,7 @@ namespace comportamiento_personajes
             //actualizamos posiciones y destino del navmeshAgent
             if (target != null)
             {
-                Debug.Log("TARGET SELECCIONADO = " + target.name);
+                //Debug.Log("TARGET SELECCIONADO = " + target.name);
                 target_name = target.name;
                 zb.agent.SetDestination(target.transform.position);
             }

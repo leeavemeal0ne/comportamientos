@@ -32,14 +32,14 @@ namespace comportamiento_personajes
         {
             if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
-                Debug.Log("SALGO TODO EL RATO");
+                //Debug.Log("SALGO TODO EL RATO");
                 return;
             }
 
             //si el gameObject que entra es igual a nuestro target le atacamos y cambiamos el estado
             if (zs.Attack(other))
             {
-                Debug.Log("ONTRIGGER ENTER ENTRO SEGUNDO IF DEBERÍA ATACAR");
+                //Debug.Log("ONTRIGGER ENTER ENTRO SEGUNDO IF DEBERÍA ATACAR");
                 zs.zb.setisAttacking(true);
                 zs.zb.setCurrentState(AIStates.Attack);
 
@@ -113,7 +113,7 @@ namespace comportamiento_personajes
 
             if (zs.Attack(other))
             {
-                Debug.Log("OnTriggerExit de zombie_attack");
+                //Debug.Log("OnTriggerExit de zombie_attack");
                 zs.zb.backToAlert();
             }               
         }

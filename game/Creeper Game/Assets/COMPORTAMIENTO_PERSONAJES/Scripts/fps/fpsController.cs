@@ -120,7 +120,7 @@ public class fpsController : Human {
             {
                 //Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
                 if (hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE || hit.collider.gameObject.tag == Tags.FAST_ZOMBIE 
-                    || hit.collider.gameObject.tag == Tags.SURVIVOR)
+                    || hit.collider.gameObject.tag == Tags.SURVIVOR || hit.collider.gameObject.tag == Tags.ELITE_ZOMBIE)
                 {
                     hit.collider.gameObject.GetComponent<Zombie>().TakeDamage(10);                   
                 }

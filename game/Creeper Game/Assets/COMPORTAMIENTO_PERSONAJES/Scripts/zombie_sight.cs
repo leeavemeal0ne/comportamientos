@@ -80,14 +80,6 @@ namespace comportamiento_personajes
             target_name = "";
         }
 
-        public void notifyAllPlayers()
-        {
-            foreach (GameObject g in players)
-            {
-                g.GetComponent<Zombie>().notifyDead();
-            }
-        }
-
         public void getPlayersInScene()
         {
             Debug.Log("Numero de Objetos ANTES en el array = " + players.Count);
@@ -170,7 +162,7 @@ namespace comportamiento_personajes
             //cuando sale de nuestra área de influencia borramos del array y actualizamos nuestro estado
             if (EnemySight.Contains(other.gameObject))
             {
-                Debug.Log("Borro el enemigo a la salida");
+                //Debug.Log("Borro el enemigo a la salida");
                 EnemySight.Remove(other.gameObject);
             }
             chooseTarget();
@@ -187,7 +179,7 @@ namespace comportamiento_personajes
             {
                 if (zb.currentState == AIStates.Alerted)
                 {
-                    Debug.Log("BACK TO PATROL");
+                    //Debug.Log("BACK TO PATROL");
                     distance = 100;
                     target = null;
                     zb.backToPatrol();
@@ -210,7 +202,7 @@ namespace comportamiento_personajes
                     //Si la distancia al objetivo es menor a 3 no calculamos nada nos quedamos con el target que tengamos
                     if (distance < 3)
                     {
-                        Debug.Log("Distance < 2");
+                        //Debug.Log("Distance < 2");
                         if (g.Equals(target))
                         {
                             //Debug.Log("Me quedo con mi target = " + g.name);
@@ -220,7 +212,7 @@ namespace comportamiento_personajes
                     }
                     else
                     {
-                        Debug.Log("Distance < 2 ELSE");
+                        //Debug.Log("Distance < 2 ELSE");
                         //Elegimos el de menor distancia
                         float dis = Vector3.Distance(g.transform.position, this.transform.position);
                         if (dis < distance)
@@ -272,13 +264,13 @@ namespace comportamiento_personajes
                         canSee = true;
                         if (!EnemySight.Contains(other.gameObject))
                         {
-                            Debug.Log("AÑADO ENEMIGO GameObject ENEMYSIGHT");
+                            //Debug.Log("AÑADO ENEMIGO GameObject ENEMYSIGHT");
                             EnemySight.Add(other.gameObject);
                         }
                     }
                     else
                     {
-                        Debug.Log("Borrado GameObject ENEMYSIGHT");
+                        //Debug.Log("Borrado GameObject ENEMYSIGHT");
                         EnemySight.Remove(other.gameObject);
                     }
                     direction = Quaternion.Euler(0, -40, 0) * direction;

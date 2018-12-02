@@ -55,7 +55,7 @@ public class Human : Zombie {
         healthText.text = "Health: " + health + "/" + StandardConstants.MAX_HEALTH;
     }
 
-    public override void notifyDead()
+    public override void notifyPeace()
     {
         //throw new System.NotImplementedException();
     }
@@ -143,5 +143,8 @@ public class Human : Zombie {
         yield return null;
     }
 
-
+    public override void leavePeace()
+    {
+        //throw new System.NotImplementedException();
+    }
 }

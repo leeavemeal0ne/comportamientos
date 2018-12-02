@@ -13,6 +13,11 @@ namespace comportamiento_personajes
 
     public class Basic_zombie_behaviour : Zombie
     {
+
+        //gameobjects para modo PEACE
+        public GameObject vision;
+        public GameObject attack;
+
         //Agent variables
         private const float AGENT_SPEED = 0.05f;
         private const float AGENT_ROTATIONSPEED = 120;
@@ -172,10 +177,25 @@ namespace comportamiento_personajes
             GetComponent<Rigidbody>().isKinematic = true;           
         }
 
-        public override void notifyDead()
+        public override void notifyPeace()
         {
-                Debug.Log("DEBO ACTUALIZAR TODOS LOS JUGADORES");
-                this.GetComponentInChildren<zombie_sight>().getPlayersInScene();
+            if (currentState != AIStates.Peace)
+            {
+                currentState = AIStates.Peace;
+                vision.SetActive(false);
+                attack.SetActive(false);
+                setNextRandomPoint();
+            }
+        }
+        public override void leavePeace()
+        {
+            if (currentState == AIStates.Peace)
+            {
+                currentState = AIStates.Patrol;
+                vision.SetActive(true);
+                attack.SetActive(true);
+                backToPatrol();
+            }
         }
         #endregion
 
@@ -270,7 +290,7 @@ namespace comportamiento_personajes
             }
 
             //Si no está en alerta o attaque accede aquí así restamos si tiene hambre
-            if(!currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack))
+            if(!currentState.Equals(AIStates.Alerted) && !currentState.Equals(AIStates.Attack) && !currentState.Equals(AIStates.Peace))
             {
                 //coroutinePatrolEnded indica si las coroutines han terminado así no mezclamos animaciones ni estados durante las animaciones
                 if (!currentState.Equals(AIStates.Feeding) && !feeding && coroutinePatrolEnded)
@@ -321,6 +341,15 @@ namespace comportamiento_personajes
                             co = StartCoroutine(loadAnimationSeek());
                         }
                     break;
+                case AIStates.Peace:
+                    if (agent.remainingDistance < 0.3f && !nextPathCalculated)
+                    {
+                        nextPathCalculated = true;
+                        setAgentParameters(0, 0);
+                        setAnimatorParameters("Speed", 0);
+                        co = StartCoroutine(loadAnimationSeek());
+                    }
+                    break;
                 case AIStates.Feeding:
                     if (!seeking_food)
                     { 
@@ -352,7 +381,7 @@ namespace comportamiento_personajes
                 feeding = true;
 
                 //ResetAllPatrolTasks();
-                Debug.Log("START TO EAT DENTRO IF");
+                //Debug.Log("START TO EAT DENTRO IF");
 
                 setAnimatorParameters("Speed", 0);
                 setAgentParameters(0,0);

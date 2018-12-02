@@ -11,7 +11,8 @@ namespace comportamiento_personajes
         public abstract void startToEat();
         public abstract void TakeDamage(int dmg);
         public abstract bool getIsDead();
-        public abstract void notifyDead();
+        public abstract void notifyPeace();
+        public abstract void leavePeace();
     }
 
 }
