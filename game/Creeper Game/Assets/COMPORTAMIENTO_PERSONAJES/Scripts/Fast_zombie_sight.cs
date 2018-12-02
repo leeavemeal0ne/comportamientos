@@ -219,7 +219,7 @@ namespace comportamiento_personajes
                     Debug.DrawRay(transform.position, direction, Color.black);
                     bool colliderHit = Physics.Raycast(transform.position, direction.normalized, out hit, col.radius);
 
-                    if (colliderHit && hit.collider.gameObject.tag.Equals(TAG))
+                    if (colliderHit)
                     {
                         canSee = true;
                         if (!EnemySight.Contains(other.gameObject))

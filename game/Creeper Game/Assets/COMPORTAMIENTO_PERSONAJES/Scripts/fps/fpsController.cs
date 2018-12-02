@@ -124,7 +124,7 @@ public class fpsController : Human {
                 }
             }
             updateText();
-            Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
+            //Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
             /*for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit hit = hits[i];
