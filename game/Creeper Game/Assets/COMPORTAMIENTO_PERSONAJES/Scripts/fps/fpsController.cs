@@ -6,14 +6,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class fpsController : Zombie {
+public class fpsController : Human {
 
     private string DEFAULT_TEXT_TOTALMUNICION = "Munición Total: ";
     private string DEFAULT_TEXT_CARGADOR = "Cargador: ";
     private string DEFAULT_LIFE = "Health: ";
 
     private float speed = 2;
-    private int Health = 100;
+    //private int Health = 100;
     private bool playerIsDead = false;
 
     private float minimumRotationVertical = 45;
@@ -33,7 +33,7 @@ public class fpsController : Zombie {
     public ParticleSystem shotParticles;
     public Transform shotPosition;
     public Camera fpsCamera;
-    private Animator anim;
+    private Animator animator;
     public TextMeshProUGUI txtPro;
 
     //munición
@@ -42,13 +42,13 @@ public class fpsController : Zombie {
     private int DEFAULT_BALAS_EN_CARGADOR = 20;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
         gameObject.tag = Tags.PLAYER;
         transform.rotation.Set(0, 180, 0, 1);
         gun.transform.rotation.Set(0, 180, 0,gun.transform.rotation.w);
         fpsCamera = GetComponentInChildren<Camera>();
 
-        anim = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         updateText();
 	}
 	
@@ -86,7 +86,8 @@ public class fpsController : Zombie {
 
         transform.Translate(movement);
 
-        Debug.DrawRay(gun.position, gun.forward, Color.red);
+        //Debug.DrawRay(gun.position, gun.forward, Color.red);
+        Debug.DrawRay(weapon.position, weapon.forward, Color.red);
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -102,15 +103,31 @@ public class fpsController : Zombie {
     private void shot()
     {
         bool wall = false;
-        if(municionCargador >= 0)
+        if(municionCargador > 0)
         {
             municionCargador--;
             shotParticles.transform.position = shotPosition.position;
             shotParticles.transform.rotation = shotPosition.rotation;
             shotParticles.Play();
             RaycastHit[] hits;
-            hits = Physics.RaycastAll(weapon.position, weapon.forward, 100.0F);
-            for (int i = 0; i < hits.Length; i++)
+            RaycastHit hit;
+            int layerMask = 1 << 4;
+            layerMask = ~layerMask;
+            //hits = Physics.RaycastAll(weapon.position, weapon.forward, 100.0F);
+            //La máscara es para rellenar lo que quería poner era QueryTriggerInteraction para que ignorara los Triggers 
+            bool hitObject = Physics.Raycast(weapon.position, weapon.forward, out hit,20, layerMask, QueryTriggerInteraction.Ignore);
+            if (hitObject)
+            {
+                //Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
+                if (hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE || hit.collider.gameObject.tag == Tags.FAST_ZOMBIE 
+                    || hit.collider.gameObject.tag == Tags.SURVIVOR)
+                {
+                    hit.collider.gameObject.GetComponent<Zombie>().TakeDamage(10);                   
+                }
+            }
+            updateText();
+            
+            /*for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit hit = hits[i];
                 if (hit.collider.gameObject.tag == Tags.WALL)
@@ -126,15 +143,9 @@ public class fpsController : Zombie {
 
                 updateText();
 
-            }
-            
-            
-        }
-       
-
-        
-    }
-        
+            }*/ 
+        }      
+    }       
 
     private void reload()
     {
@@ -143,14 +154,14 @@ public class fpsController : Zombie {
           {
              municionCargador += balas;
              municionTotal -= balas;
-            anim.SetTrigger("Reload_trigger");
+            animator.SetTrigger("Reload_trigger");
           }
           else if(balas > municionTotal && municionTotal > 0)
           {
              balas = municionTotal;
              municionCargador -= balas;
              municionTotal -= balas;
-            anim.SetTrigger("Reload_trigger");
+            animator.SetTrigger("Reload_trigger");
           }
         updateText();
     }
@@ -159,21 +170,15 @@ public class fpsController : Zombie {
     {
         txtPro.text = DEFAULT_TEXT_TOTALMUNICION + municionTotal + "\n"
                       + DEFAULT_TEXT_CARGADOR + municionCargador+"\n" +
-                      DEFAULT_LIFE + Health;
-    }
-
-    public override void startToEat()
-    {
-        throw new System.NotImplementedException();
+                      DEFAULT_LIFE + health;
     }
 
     public override void TakeDamage(int dmg)
     {
         if (!playerIsDead)
         {
-            Debug.Log("Me hacen pupita--------");
-            Health -= dmg;
-            if (Health <= 0)
+            health -= dmg;
+            if (health <= 0)
             {
                 playerIsDead = true;
                 gameObject.tag = Tags.DEATH_ZOMBIE;
@@ -182,10 +187,5 @@ public class fpsController : Zombie {
             }
             updateText();
         }       
-    }
-
-    public override bool getIsDead()
-    {
-        throw new System.NotImplementedException();
     }
 }

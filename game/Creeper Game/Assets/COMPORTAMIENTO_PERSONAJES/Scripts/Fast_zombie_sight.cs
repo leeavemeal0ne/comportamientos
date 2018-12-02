@@ -66,8 +66,7 @@ namespace comportamiento_personajes
                 temp = GameObject.FindGameObjectsWithTag(t).ToList();
                 players.AddRange(temp);
             }
-            //players = GameObject.FindGameObjectsWithTag(TAG).ToList();
-            //players.AddRange(GameObject.FindGameObjectsWithTag(Tags.NORMAL_ZOMBIE).ToList());
+
             Debug.Log("Numero de players en lista: " + players.Count);
             col = GetComponent<SphereCollider>();
             //player o superviviente es visible
@@ -81,11 +80,52 @@ namespace comportamiento_personajes
             target_name = "";
         }
 
+        public void notifyAllPlayers()
+        {
+            Debug.Log("NOTIFICO A TODOS LOS JUGADORES");
+            foreach (GameObject g in players)
+            {
+                Debug.Log("NOTIFICO A " + g.name);
+                g.GetComponent<Zombie>().notifyDead();
+            }
+        }
+
+        public void getPlayersInScene()
+        {
+            Debug.Log("Numero de Objetos ANTES en el array = " + players.Count);
+            //Buscamos todos los gameObjects con tag Player
+            players = new List<GameObject>(20);
+            List<GameObject> temp = new List<GameObject>(10);
+            foreach (string t in TagList)
+            {
+                temp = GameObject.FindGameObjectsWithTag(t).ToList();
+                foreach(GameObject g in temp)
+                {
+                    if (!g.GetComponent<Zombie>().getIsDead())
+                    {
+                        players.Add(g);
+                        Debug.Log("NOMBRE GAMEOBJECT = " + g.name);
+                    }
+                }
+                //players.AddRange(temp);
+                temp.Clear();
+            }
+
+            Debug.Log("-------------------------------------------------Esta en ESCENA Y ACTUALIZO LOS PLAYERS VIVOS");
+            Debug.Log("Numero de Objetos en el array = " + players.Count);
+
+            EnemySight.Clear();
+            target_name = "";
+
+            zb.backToAlert();
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             //Si la lista no contiene al objeto que entra sale
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
+                Debug.Log("ENTRO EN RETURN");
                 return;
             }
             else
@@ -103,15 +143,27 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
+            if (target != null && target.GetComponentInParent<Zombie>().getIsDead())
+            {
+                getPlayersInScene();
+            }
 
             //Si esta comiendo no hace nada o si está atacando
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
             {
+                //Debug.Log("SALGO TODO EL RATO");
                 return;
             }
 
             //primero vemos si puedo ver al enemigo y después elegimos el objetivo si hay
-            canSeeEnemy(other);
+            //cambiamos el estado 
+            if (canSeeEnemy(other))
+            {
+                if (zb.currentState == AIStates.Patrol)
+                {
+                    zb.setCurrentState(AIStates.Alerted);
+                }
+            }
             chooseTarget();
         }
 
@@ -126,9 +178,6 @@ namespace comportamiento_personajes
                 EnemySight.Remove(other.gameObject);
             }
             chooseTarget();
-
-
-
         }
 
         /// <summary>
@@ -164,7 +213,7 @@ namespace comportamiento_personajes
                     //Si la distancia al objetivo es menor a 3 no calculamos nada nos quedamos con el target que tengamos
                     if (distance < 3)
                     {
-                        Debug.Log("Distance < 2");
+                        //Debug.Log("Distance < 2");
                         if (g.Equals(target))
                         {
                             //Debug.Log("Me quedo con mi target = " + g.name);
@@ -188,9 +237,8 @@ namespace comportamiento_personajes
             //actualizamos posiciones y destino del navmeshAgent
             if (target != null)
             {
+                Debug.Log("TARGET SELECCIONADO = " + target.name);
                 target_name = target.name;
-                //Debug.Log("Target seleccionado = " + target.name);
-                //zb.transform.rotation = Quaternion.Lerp(zb.transform.rotation, target.transform.rotation, 5 * Time.deltaTime);
                 zb.agent.SetDestination(target.transform.position);
             }
         }
@@ -219,7 +267,7 @@ namespace comportamiento_personajes
                     Debug.DrawRay(transform.position, direction, Color.black);
                     bool colliderHit = Physics.Raycast(transform.position, direction.normalized, out hit, col.radius);
 
-                    if (colliderHit && hit.collider.gameObject.tag.Equals(TAG))
+                    if (colliderHit)
                     {
                         canSee = true;
                         if (!EnemySight.Contains(other.gameObject))

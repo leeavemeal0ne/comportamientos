@@ -56,7 +56,7 @@ namespace comportamiento_personajes
             target = null;
             //Distancia al objetivo
             distance = 100;
-            minDistance = 3;           
+            minDistance = 3;
 
             //Buscamos todos los gameObjects con tag Player
             players = new List<GameObject>(20);
@@ -66,8 +66,6 @@ namespace comportamiento_personajes
                 temp = GameObject.FindGameObjectsWithTag(t).ToList();
                 players.AddRange(temp);
             }
-            //players = GameObject.FindGameObjectsWithTag(TAG).ToList();
-            Debug.Log("Numero de players en lista: " + players.Count);
             col = GetComponent<SphereCollider>();
             //player o superviviente es visible
             playerInSight = false;
@@ -77,7 +75,47 @@ namespace comportamiento_personajes
             playerInCollider = new List<GameObject>(20);
             EnemySight = new List<GameObject>(20);
 
+            Debug.Log("Numero de players en lista: " + players.Count);
+
             target_name = "";
+        }
+
+        public void notifyAllPlayers()
+        {
+            foreach (GameObject g in players)
+            {
+                g.GetComponent<Zombie>().notifyDead();
+            }
+        }
+
+        public void getPlayersInScene()
+        {
+            Debug.Log("Numero de Objetos ANTES en el array = " + players.Count);
+            //Buscamos todos los gameObjects con tag Player
+            players = new List<GameObject>(20);
+            List<GameObject> temp = new List<GameObject>(10);
+            foreach (string t in TagList)
+            {
+                temp = GameObject.FindGameObjectsWithTag(t).ToList();
+                foreach (GameObject g in temp)
+                {
+                    if (!g.GetComponent<Zombie>().getIsDead())
+                    {
+                        players.Add(g);
+                        Debug.Log("NOMBRE GAMEOBJECT = " + g.name);
+                    }
+                }
+                //players.AddRange(temp);
+                temp.Clear();
+            }
+
+            Debug.Log("-------------------------------------------------Esta en ESCENA Y ACTUALIZO LOS PLAYERS VIVOS");
+            Debug.Log("Numero de Objetos en el array = " + players.Count);
+
+            EnemySight.Clear();
+            target_name = "";
+
+            zb.backToAlert();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -102,6 +140,10 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
+            if (target != null && target.GetComponentInParent<Zombie>().getIsDead())
+            {
+                getPlayersInScene();
+            }
 
             //Si esta comiendo no hace nada o si está atacando
             if (!players.Contains(other.gameObject) || zb.feeding || zb.isAttacking)
@@ -110,7 +152,14 @@ namespace comportamiento_personajes
             }
 
             //primero vemos si puedo ver al enemigo y después elegimos el objetivo si hay
-            canSeeEnemy(other);
+            //cambiamos el estado 
+            if (canSeeEnemy(other))
+            {
+                if (zb.currentState == AIStates.Patrol)
+                {
+                    zb.setCurrentState(AIStates.Alerted);
+                }
+            }
             chooseTarget();
         }
 
@@ -147,6 +196,7 @@ namespace comportamiento_personajes
             //si solo hay un objetivo le elegimos
             else if (EnemySight.Count == 1)
             {
+               // Debug.Log("Count == 1");
                 //Debug.Log("ENEMY SIGHT = 1, tag = " + EnemySight[0].name);
                 target = EnemySight[0];
                 distance = Vector3.Distance(target.transform.position, this.transform.position);
@@ -170,6 +220,7 @@ namespace comportamiento_personajes
                     }
                     else
                     {
+                        Debug.Log("Distance < 2 ELSE");
                         //Elegimos el de menor distancia
                         float dis = Vector3.Distance(g.transform.position, this.transform.position);
                         if (dis < distance)
@@ -184,11 +235,13 @@ namespace comportamiento_personajes
             //actualizamos posiciones y destino del navmeshAgent
             if (target != null)
             {
+                //Debug.Log("----------------------------TARGET.NAME = " + target.name);
                 target_name = target.name;
                 //Debug.Log("Target seleccionado = " + target.name);
                 //zb.transform.rotation = Quaternion.Lerp(zb.transform.rotation, target.transform.rotation, 5 * Time.deltaTime);
                 zb.agent.SetDestination(target.transform.position);
             }
+
         }
 
         /// <summary>
@@ -200,7 +253,7 @@ namespace comportamiento_personajes
         private bool canSeeEnemy(Collider other)
         {
             bool canSee = false;
-
+            //Debug.Log("PLAYER CONTAINS GAMEOBJECT == " + players.Contains(other.gameObject));
             if (players.Contains(other.gameObject))
             {
                 Vector3 direction = other.transform.position - zb.transform.position;
@@ -214,19 +267,18 @@ namespace comportamiento_personajes
 
                     Debug.DrawRay(transform.position, direction, Color.black);
                     bool colliderHit = Physics.Raycast(transform.position, direction.normalized, out hit, col.radius);
-
-                    if (colliderHit && hit.collider.gameObject.tag.Equals(TAG))
+                    if (colliderHit)
                     {
                         canSee = true;
                         if (!EnemySight.Contains(other.gameObject))
                         {
-                            //Debug.Log("AÑADO ENEMIGO GameObject ENEMYSIGHT");
+                            Debug.Log("AÑADO ENEMIGO GameObject ENEMYSIGHT");
                             EnemySight.Add(other.gameObject);
                         }
                     }
                     else
                     {
-                        //Debug.Log("Borrado GameObject ENEMYSIGHT");
+                        Debug.Log("Borrado GameObject ENEMYSIGHT");
                         EnemySight.Remove(other.gameObject);
                     }
                     direction = Quaternion.Euler(0, -40, 0) * direction;

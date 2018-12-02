@@ -92,7 +92,7 @@ public class SurvivorBehaviour : Human {
 
     private void CheckStateBehaviour()
     {
-        print("State: " + currentState);
+        print(name + " State: " + currentState + " target: " + actualTarget);
         //print("Target: " + actualTarget.name);
         switch (currentState)
         {
@@ -108,7 +108,7 @@ public class SurvivorBehaviour : Human {
                     Vector3 relPos = realObjectPos - transform.position;
                     Quaternion rot = Quaternion.LookRotation(relPos, Vector3.up);
                     transform.rotation = rot;
-                    print("Finished Aiming " + finishedAiming);
+                    //print("Finished Aiming " + finishedAiming);
                     if (!isAiming)
                     {
                         isAiming = true;
@@ -274,6 +274,8 @@ public class SurvivorBehaviour : Human {
                     }
                     break;
                 case AIStates.Steal:
+                    ResetAnimator();
+                    print("Stealing to: " + actualTarget.name);
                     givingAmmo = false;
                     StopAllCoroutines();
                     if (actualTarget.GetComponent<Human>().getAmmo() <= 0)
@@ -345,7 +347,7 @@ public class SurvivorBehaviour : Human {
 
         Vector3 direction = actualTarget.transform.position - head.position;
 
-        print("ActualTargetRay: " + actualTarget);
+        //print("ActualTargetRay: " + actualTarget);
         Debug.DrawRay(head.position, direction, Color.red, -1);
         bool wall = false;
         hits = Physics.RaycastAll(head.position, direction, Vector3.Distance(actualTarget.transform.position, head.position));

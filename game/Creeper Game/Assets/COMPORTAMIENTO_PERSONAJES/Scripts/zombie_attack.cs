@@ -56,6 +56,11 @@ namespace comportamiento_personajes
 
         private void OnTriggerStay(Collider other)
         {
+            if (zs.target != null && zs.target.GetComponentInParent<Zombie>().getIsDead())
+            {
+                zs.getPlayersInScene();
+            }
+
             //si el collider que entra no es nuestro objetivo, el array de enemigos está a 0 porque no le vemos y demás no hacemos nada
             if (zs.zb.feeding || !zs.Attack(other) || zs.getEnemySightCount() <= 0)
             {
@@ -65,7 +70,7 @@ namespace comportamiento_personajes
 
             //calculamos la distancia al target si es menor a 1 dejamos de andar y atacamos, sino volvemos a andar
             float distance = Vector3.Distance(parent_transform.position, zs.target.transform.position);
-            Debug.Log("Distancia a OBJETIVO: " + distance);
+            //Debug.Log("Distancia a OBJETIVO: " + distance);
 
             if(distance < 2f)
             {
