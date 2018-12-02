@@ -29,6 +29,7 @@ public class fpsController : Zombie {
     private float cantidadMovimiento = 0.05f;
 
     public Transform gun;
+    public Transform weapon;
     public ParticleSystem shotParticles;
     public Transform shotPosition;
     public Camera fpsCamera;
@@ -100,25 +101,40 @@ public class fpsController : Zombie {
 
     private void shot()
     {
-        
+        bool wall = false;
         if(municionCargador >= 0)
         {
             municionCargador--;
             shotParticles.transform.position = shotPosition.position;
             shotParticles.transform.rotation = shotPosition.rotation;
             shotParticles.Play();
-            RaycastHit hit;
-            bool rayhit = Physics.Raycast(transform.position, transform.forward, out hit, 100);
-            if (rayhit)
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(weapon.position, weapon.forward, 100.0F);
+            for (int i = 0; i < hits.Length; i++)
             {
-                Debug.Log("NOMBRE DE A QUIEN DOY = " + hit.collider.gameObject.name);
-                hit.collider.gameObject.GetComponentInParent<Zombie>().TakeDamage(10);
-            }
+                RaycastHit hit = hits[i];
+                if (hit.collider.gameObject.tag == Tags.WALL)
+                {
+                    wall = true;
+                }
                 
-            updateText();
+                if (!wall && hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE)
+                {
+                    Debug.Log("NOMBRE DE A QUIEN DOY = " + hit.collider.gameObject.name);
+                    hit.collider.gameObject.GetComponent<Zombie>().TakeDamage(10);
+                }
+
+                updateText();
+
+            }
+            
+            
         }
+       
+
         
     }
+        
 
     private void reload()
     {
