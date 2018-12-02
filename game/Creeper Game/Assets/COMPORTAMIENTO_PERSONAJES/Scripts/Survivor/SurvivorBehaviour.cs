@@ -17,6 +17,8 @@ public class SurvivorBehaviour : Human {
     private NavMeshAgent agent;
     /* VARIABLES PARA EL NAVMESH*/
     public GameObject WayPointList;
+    public List<GameObject> allWaypointList;
+
     private List<Transform> waypoints;
     private int actualWayPoint = 0;
 
@@ -78,7 +80,12 @@ public class SurvivorBehaviour : Human {
     }
 	
 	// Update is called once per frame
-	void Update () {             
+	void Update () {
+        if (getIsDead())
+        {
+            StopAllCoroutines();
+            return;
+        }
 
         CheckStateBehaviour();
 	}
@@ -147,6 +154,7 @@ public class SurvivorBehaviour : Human {
                 {
                     print("He terminado de huir");
                     setState(AIStates.Rest);
+                    StartCoroutine("StopRunaway");
                 }
 
                 break;
@@ -300,10 +308,11 @@ public class SurvivorBehaviour : Human {
 
     private void Patrol()
     {
-        if(agent.destination != waypoints[actualWayPoint].position)
-        {
-            agent.SetDestination(waypoints[actualWayPoint].position);
-        }
+        NavMeshPath path = new NavMeshPath();
+        agent.CalculatePath(waypoints[actualWayPoint].position, path);
+        agent.SetPath(path);
+        //agent.SetDestination(waypoints[actualWayPoint].position);
+
 
         if (CheckPoint())
         {
@@ -611,6 +620,31 @@ public class SurvivorBehaviour : Human {
         {
             print("no ha muerto");
         }
+        yield return null;
+    }
+
+    IEnumerator StopRunaway()
+    {
+        bool found = false;
+        while (!found)
+        {
+            int index = Random.Range(0, allWaypointList.Count - 1);
+            GameObject points = allWaypointList[index];
+            if (points != WayPointList)
+            {
+                WayPointList = points;
+                actualWayPoint = 0;
+                found = true;
+                waypoints = new List<Transform>();
+                foreach(Transform t in WayPointList.transform)
+                {
+                    waypoints.Add(t);
+                }
+
+            }
+        }
+        yield return new WaitForSeconds(5.0f);
+        setState(AIStates.Patrol);
         yield return null;
     }
 }
