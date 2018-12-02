@@ -180,7 +180,7 @@ namespace comportamiento_personajes
             //si solo hay un objetivo le elegimos
             else if (EnemySight.Count == 1)
             {
-                Debug.Log("Count == 1");
+               // Debug.Log("Count == 1");
                 //Debug.Log("ENEMY SIGHT = 1, tag = " + EnemySight[0].name);
                 target = EnemySight[0];
                 distance = Vector3.Distance(target.transform.position, this.transform.position);
@@ -219,16 +219,13 @@ namespace comportamiento_personajes
             //actualizamos posiciones y destino del navmeshAgent
             if (target != null)
             {
-                Debug.Log("----------------------------TARGET.NAME = " + target.name);
+                //Debug.Log("----------------------------TARGET.NAME = " + target.name);
                 target_name = target.name;
                 //Debug.Log("Target seleccionado = " + target.name);
                 //zb.transform.rotation = Quaternion.Lerp(zb.transform.rotation, target.transform.rotation, 5 * Time.deltaTime);
                 zb.agent.SetDestination(target.transform.position);
             }
-            else
-            {
-                Debug.Log("Target =============== null");
-            }
+
         }
 
         /// <summary>
@@ -240,7 +237,7 @@ namespace comportamiento_personajes
         private bool canSeeEnemy(Collider other)
         {
             bool canSee = false;
-            Debug.Log("PLAYER CONTAINS GAMEOBJECT == " + players.Contains(other.gameObject));
+            //Debug.Log("PLAYER CONTAINS GAMEOBJECT == " + players.Contains(other.gameObject));
             if (players.Contains(other.gameObject))
             {
                 Vector3 direction = other.transform.position - zb.transform.position;
@@ -254,7 +251,6 @@ namespace comportamiento_personajes
 
                     Debug.DrawRay(transform.position, direction, Color.black);
                     bool colliderHit = Physics.Raycast(transform.position, direction.normalized, out hit, col.radius);
-                    Debug.Log("COLLIDER HIT == " + colliderHit);
                     if (colliderHit)
                     {
                         canSee = true;
@@ -276,7 +272,7 @@ namespace comportamiento_personajes
                     Debug.DrawLine(transform.position, hit.point, Color.red);
                 }
             }
-            Debug.Log("VEO AL SURVIVOR ======== " + canSee);
+
             return canSee;
         }
 

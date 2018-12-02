@@ -103,7 +103,7 @@ public class fpsController : Human {
     private void shot()
     {
         bool wall = false;
-        if(municionCargador >= 0)
+        if(municionCargador > 0)
         {
             municionCargador--;
             shotParticles.transform.position = shotPosition.position;
@@ -111,20 +111,22 @@ public class fpsController : Human {
             shotParticles.Play();
             RaycastHit[] hits;
             RaycastHit hit;
-            int layerMask = 1 << 8;
+            int layerMask = 1 << 4;
             layerMask = ~layerMask;
             //hits = Physics.RaycastAll(weapon.position, weapon.forward, 100.0F);
+            //La máscara es para rellenar lo que quería poner era QueryTriggerInteraction para que ignorara los Triggers 
             bool hitObject = Physics.Raycast(weapon.position, weapon.forward, out hit,20, layerMask, QueryTriggerInteraction.Ignore);
             if (hitObject)
             {
-                if (hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE || hit.collider.gameObject.tag == Tags.FAST_ZOMBIE)
+                Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
+                if (hit.collider.gameObject.tag == Tags.NORMAL_ZOMBIE || hit.collider.gameObject.tag == Tags.FAST_ZOMBIE 
+                    || hit.collider.gameObject.tag == Tags.SURVIVOR)
                 {
-                    hit.collider.gameObject.GetComponent<Zombie>().TakeDamage(10);
-                    
+                    hit.collider.gameObject.GetComponent<Zombie>().TakeDamage(10);                   
                 }
             }
             updateText();
-            Debug.Log("-----------------------------------------------------------OBJETO QUE COLISIONA EN HIT = " + hit.collider.name);
+            
             /*for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit hit = hits[i];
