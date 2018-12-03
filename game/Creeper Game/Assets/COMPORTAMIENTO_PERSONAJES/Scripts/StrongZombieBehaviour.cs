@@ -423,6 +423,18 @@ namespace comportamiento_personajes
                 setAnimatorParameters("Feeding_bool", true);
             }
         }
+
+        public override void notifyPeace()
+        {
+            //do nothing
+            //throw new System.NotImplementedException();
+        }
+
+        public override void leavePeace()
+        {
+            //do nothing
+            //throw new System.NotImplementedException();
+        }
     }
 
 }
