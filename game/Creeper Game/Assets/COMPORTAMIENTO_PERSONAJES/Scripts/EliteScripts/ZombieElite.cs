@@ -51,15 +51,12 @@ public class ZombieElite : Zombie {
     //Coroutine ended
     private bool coroutinePatrolEnded;
 
-    List<string> tagsList;
+    
 
-	// Use this for initialization
-	void Start () {
-        tagsList = new List<string>(10);
-        tagsList.Add(Tags.NORMAL_ZOMBIE);
-        tagsList.Add(Tags.FAST_ZOMBIE);
-
-        gameObject.tag = Tags.NORMAL_ZOMBIE;
+    // Use this for initialization
+    void Start () {
+        Cursor.visible = false;
+        gameObject.tag = Tags.ELITE_ZOMBIE;
 
         life = 100;
 
@@ -116,10 +113,6 @@ public class ZombieElite : Zombie {
     {
         animator.SetBool(name, value);
     }
-    /*private void setAnimatorParameters(string name, int value)
-    {
-        animator.SetInteger(name, value);
-    }*/
     public void setAnimatorTriggerParameters(string name)
     {
         //animator.Rebind();
@@ -219,15 +212,6 @@ public class ZombieElite : Zombie {
                     co = StartCoroutine(loadAnimationSeek());
                 }
                 break;
-            case AIStates.Peace:
-                if (agent.remainingDistance < 0.3f && !nextPathCalculated)
-                {
-                    nextPathCalculated = true;
-                    setAgentParameters(0, 0);
-                    setAnimatorParameters("Speed", 0);
-                    co = StartCoroutine(loadAnimationSeek());
-                }
-                break;
             case AIStates.Feeding:
                 if (!seeking_food)
                 {
@@ -238,25 +222,7 @@ public class ZombieElite : Zombie {
     }
     #endregion
 
-    #region OnTriggerStay-Exit
-    private void OnTriggerStay(Collider other)
-    {
-        if (tagsList.Contains(other.tag))
-        {
-            //Debug.Log("DEBERÍA DESHABILITAR LOS SCRIPTS");           
-            other.GetComponentInParent<Zombie>().notifyPeace();
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (tagsList.Contains(other.tag))
-        {
-            Debug.Log("DEBERÍA HABILITAR LOS SCRIPTS");
-            other.GetComponentInParent<Zombie>().leavePeace();
-        }
-    }
-    #endregion
+    
 
     #region feeding_state_methods
     /// <summary>
@@ -355,7 +321,15 @@ public class ZombieElite : Zombie {
         agent.ResetPath();
         //activar animación de daño
         StopAllCoroutines();
-        //this.enabled = false;
+
+        List<GameObject> zombiesList = this.GetComponentInChildren<ZombieEliteVision>().zombiesList;
+        foreach(GameObject g in zombiesList)
+        {
+            g.GetComponentInParent<Zombie>().leavePeace();
+        }
+
+        Collider cp = GetComponent<Collider>();
+        Destroy(cp);
         Collider[] c = GetComponentsInChildren<Collider>();
         Destroy(GetComponent<NavMeshAgent>());
         foreach (Collider col in c)
