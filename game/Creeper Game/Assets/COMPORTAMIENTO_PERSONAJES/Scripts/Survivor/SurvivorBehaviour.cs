@@ -92,8 +92,7 @@ public class SurvivorBehaviour : Human {
 
     private void CheckStateBehaviour()
     {
-        //print(name + " State: " + currentState + " target: " + actualTarget);
-        ResetAnimator();
+        print("State: " + currentState);
         //print("Target: " + actualTarget.name);
         switch (currentState)
         {
@@ -232,6 +231,7 @@ public class SurvivorBehaviour : Human {
     {
         if (currentState != state)
         {
+            ResetAnimator();
             anim.SetBool("Idle", false);
             canDoAction = false;
             switch (state)
@@ -275,8 +275,6 @@ public class SurvivorBehaviour : Human {
                     }
                     break;
                 case AIStates.Steal:
-                    ResetAnimator();
-                    print("Stealing to: " + actualTarget.name);
                     givingAmmo = false;
                     StopAllCoroutines();
                     if (actualTarget.GetComponent<Human>().getAmmo() <= 0)
@@ -498,8 +496,6 @@ public class SurvivorBehaviour : Human {
     {
         anim.SetBool("Touch", false);
         anim.SetBool("Idle", false);
-        anim.SetBool("Aim", false);
-        anim.SetBool("AimWalking", false);
         anim.ResetTrigger("LookAround");
         anim.ResetTrigger("Walk");
         anim.ResetTrigger("Shoot");
