@@ -93,6 +93,7 @@ public class SurvivorBehaviour : Human {
     private void CheckStateBehaviour()
     {
         print(name + " State: " + currentState + " target: " + actualTarget);
+        ResetAnimator();
         //print("Target: " + actualTarget.name);
         switch (currentState)
         {
@@ -497,6 +498,8 @@ public class SurvivorBehaviour : Human {
     {
         anim.SetBool("Touch", false);
         anim.SetBool("Idle", false);
+        anim.SetBool("Aim", false);
+        anim.SetBool("AimWalking", false);
         anim.ResetTrigger("LookAround");
         anim.ResetTrigger("Walk");
         anim.ResetTrigger("Shoot");
