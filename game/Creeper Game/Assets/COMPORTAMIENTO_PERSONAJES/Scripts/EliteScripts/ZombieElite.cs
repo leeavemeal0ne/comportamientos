@@ -316,6 +316,7 @@ public class ZombieElite : Zombie {
         {
             StopCoroutine(wa);
         }
+        //cambiamos estado a muerto y reseteamos todo
         currentState = AIStates.Dead;
         setAgentParameters(0, 0);
         agent.ResetPath();

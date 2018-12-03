@@ -159,12 +159,13 @@ namespace comportamiento_personajes
             {
                 StopCoroutine(wa);
             }
+            //cambiamos estado a muerto y reseteamos todo
             currentState = AIStates.Dead;
             setAgentParameters(0, 0);
             agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-
+            //destruimos todos los colliders
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
