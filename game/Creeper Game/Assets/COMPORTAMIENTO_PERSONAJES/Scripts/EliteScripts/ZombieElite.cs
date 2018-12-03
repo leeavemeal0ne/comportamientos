@@ -328,8 +328,6 @@ public class ZombieElite : Zombie {
             g.GetComponentInParent<Zombie>().leavePeace();
         }
 
-        Collider cp = GetComponent<Collider>();
-        Destroy(cp);
         Collider[] c = GetComponentsInChildren<Collider>();
         Destroy(GetComponent<NavMeshAgent>());
         foreach (Collider col in c)

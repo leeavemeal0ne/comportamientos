@@ -133,7 +133,7 @@ namespace comportamiento_personajes
             if (isDead) return;
 
             life -= damage;
-            if(life <= 0 && !isDead)
+            if(life <= 5 && !isDead)
             {
                 isDead = true;
                 gameObject.tag = Tags.DEATH_ZOMBIE;
@@ -164,9 +164,7 @@ namespace comportamiento_personajes
             agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-            //this.enabled = false;
-            Collider cp = GetComponent<Collider>();
-            Destroy(cp);
+
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)

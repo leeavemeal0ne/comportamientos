@@ -135,8 +135,9 @@ namespace comportamiento_personajes
             if (isDead) return;
 
             life -= damage;
-            if(life <= 0 && !isDead)
+            if(life <= 5 && !isDead)
             {
+                Debug.Log("DEBERÍA MOrir");
                 isDead = true;
                 gameObject.tag = Tags.DEATH_ZOMBIE;
                 setAnimatorTriggerParameters("Dead_trigger");
@@ -166,9 +167,7 @@ namespace comportamiento_personajes
             agent.ResetPath();
             //activar animación de daño
             StopAllCoroutines();
-            //this.enabled = false;
-            Collider cp = GetComponent<Collider>();
-            Destroy(cp);
+
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
@@ -177,7 +176,6 @@ namespace comportamiento_personajes
             }
 
             GetComponent<Rigidbody>().isKinematic = true;
-            this.enabled = false;
         }
 
         public override void notifyPeace()
