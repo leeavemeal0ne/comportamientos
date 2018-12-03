@@ -26,7 +26,7 @@ public class SurvivorDetection : MonoBehaviour
         {
             if (survivor.zombieTags.Contains(collision.gameObject.tag) || survivor.survivorTags.Contains(collision.gameObject.tag))
             {
-                print("Detected " + collision.gameObject.tag);
+                //print("Detected " + collision.gameObject.tag);
                 Vector3 direction = collision.gameObject.transform.position - survivor.head.position;
                 float angle = Vector3.Angle(direction, transform.forward);
                 if (angle < 30.0f)
@@ -45,7 +45,7 @@ public class SurvivorDetection : MonoBehaviour
                         if (!wall && (survivor.zombieTags.Contains(allHits[i].transform.tag) || survivor.survivorTags.Contains(allHits[i].transform.tag))  && allHits[i].transform.name != survivor.name)
                         {
                             hit = allHits[i];
-                            print("Llego");
+                            //print("Llego");
                             float d = Vector3.Distance(collision.gameObject.transform.position, survivor.transform.position);
                             if (d < survivor.distance)
                             {

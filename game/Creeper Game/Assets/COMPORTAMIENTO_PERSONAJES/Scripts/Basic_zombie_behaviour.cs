@@ -167,6 +167,8 @@ namespace comportamiento_personajes
             //activar animación de daño
             StopAllCoroutines();
             //this.enabled = false;
+            Collider cp = GetComponent<Collider>();
+            Destroy(cp);
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
@@ -174,7 +176,8 @@ namespace comportamiento_personajes
                 Destroy(col);
             }
 
-            GetComponent<Rigidbody>().isKinematic = true;           
+            GetComponent<Rigidbody>().isKinematic = true;
+            this.enabled = false;
         }
 
         public override void notifyPeace()
@@ -184,7 +187,7 @@ namespace comportamiento_personajes
                 currentState = AIStates.Peace;
                 vision.SetActive(false);
                 attack.SetActive(false);
-                setNextRandomPoint();
+                backToPatrol();
             }
         }
         public override void leavePeace()

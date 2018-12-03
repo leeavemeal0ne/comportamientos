@@ -165,6 +165,8 @@ namespace comportamiento_personajes
             //activar animación de daño
             StopAllCoroutines();
             //this.enabled = false;
+            Collider cp = GetComponent<Collider>();
+            Destroy(cp);
             Collider[] c = GetComponentsInChildren<Collider>();
             Destroy(GetComponent<NavMeshAgent>());
             foreach (Collider col in c)
@@ -185,10 +187,6 @@ namespace comportamiento_personajes
                 vision.SetActive(false);
                 attack.SetActive(false);
                 backToPatrol();
-                //agent.ResetPath();
-                //setNextRandomPoint();
-                //GetComponentInChildren<Fast_zombie_sight>().enabled = false;
-                //GetComponentInChildren<Fast_zombie_attack>().enabled = false;
             }           
         }
         public override void leavePeace()
